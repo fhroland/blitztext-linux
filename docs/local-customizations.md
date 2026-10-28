@@ -53,6 +53,10 @@ KDE/Wayland.
   mit `local-2026-10-28` markiert. Manuell startbare GitHub-CI ergänzt.
 - README in Englisch und Deutsch auf den Fork ausgerichtet; aktuelle Screenshots
   der Statusbox in drei Zuständen, Tray-Menüs und Symbolfarben ergänzt.
+- Statusfarben nach Nutzerprüfung deutlicher getrennt: Aufnahme Rot
+  (`#f05c5c`), Transkription/KI-Verarbeitung Orange (`#f0ad4e`), Bereit Grün,
+  Fehler Hellrot. Zentrale Theme-Werte gelten identisch für Tray und Statusbox;
+  bisherige ähnliche Goldtöne ersetzt, Dokumentation und Screenshots aktualisiert.
 
 ### Validierung des ersten Stands
 

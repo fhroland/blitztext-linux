@@ -38,8 +38,10 @@ APP_TEXT_DIM = "#bab8b1"
 APP_TEXT_FAINT = "#8e8d88"
 
 STATE_IDLE = "#86c99a"
-STATE_RECORDING = BLITZ_400
-STATE_PROCESSING = BLITZ_300
+# Status colours must remain distinguishable from the gold branding and from
+# each other. The tray and recording overlay share these same values.
+STATE_RECORDING = "#f05c5c"
+STATE_PROCESSING = "#f0ad4e"
 STATE_ERROR = "#e88787"
 STATE_WARNING = "#e7bd70"
 

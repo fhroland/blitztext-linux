@@ -66,8 +66,9 @@ full-screen application, or the desktop layout keeps the **system tray out of vi
 - After recording: the level is replaced by **Transcribing…** or
   **Processing with AI…**. The box stays open and the total elapsed time continues
   until the workflow finishes, fails, or is discarded.
-- The microphone uses the **same icon and status colours as the tray**: gold for
-  recording and pale gold for processing. Green means ready; red means an error.
+- The microphone uses the **same icon and status colours as the tray**: **red for
+  recording** and **orange for transcription / AI processing**. Green means ready;
+  pale red means an error. The normal colour scheme is separate from gold UI accents.
 - Blitztext starts in the tray; the main window opens only on request.
 
 These are captures of the actual Qt widgets with a synthetic demonstration level
@@ -227,17 +228,17 @@ The microphone in the system tray is your indicator of the current state:
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-recording.png" width="60"><br><br>
-        <b>Gold</b> (RECORDING)<br>
+        <b>Red</b> (RECORDING)<br>
         <i>Recording is actively running.</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-processing.png" width="60"><br><br>
-        <b>Pale gold</b> (TRANSCRIBING / LLM_REWRITING)<br>
+        <b>Orange</b> (TRANSCRIBING / LLM_REWRITING)<br>
         <i>Magic in progress (transcription / AI rephrasing).</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-error.png" width="60"><br><br>
-        <b>Red</b> (ERROR)<br>
+        <b>Pale red</b> (ERROR)<br>
         <i>Oops, something went wrong.</i>
       </td>
     </tr>
@@ -289,7 +290,7 @@ The main window is a compact, frameless desktop widget with a consistent dark lo
 - **Central gold microphone:** Prominent circular button with metallic gradient and lightning bolt cut-out. Click to toggle recording on and off.
 - **Dynamic visual feedback:**
   - **Idle:** Green status dot with duration counter (`Ready: 00:00`).
-  - **Recording:** Amber indicator, live recording timer, and animated stereo wave bars flanking the mic.
+  - **Recording:** Red status indicator, live recording timer, and animated stereo wave bars flanking the mic.
   - **Processing:** Rotating gold progress ring around the microphone (`Transcribing…`).
 - **Local | With AI switch:** Two buttons right under the microphone. **Local** = transcription without LLM rewriting; use a local speech backend to keep audio on the machine. **With AI** adds rewriting through the configured AI endpoint (for example, the GX10). The chosen side is gold; the state line below it (for example `Local · Whisper base` or `With AI · OpenAI · Improve`) shows what the next recording does and opens the details popup when clicked. Hotkey workflows move the switch to the matching side, and it is locked while recording.
 - **Tool row:**

@@ -71,8 +71,9 @@ den **Systemtray unsichtbar macht**.
   Pegelanzeige. Die Box bleibt bis zum Abschluss, Fehler oder Verwerfen sichtbar;
   die gesamte Laufzeit zählt weiter.
 - Das Mikrofon übernimmt **dasselbe Symbol und dieselben Statusfarben wie der
-  Tray**: Gold für Aufnahme und Hellgold für Verarbeitung. Grün steht für bereit,
-  Rot für einen Fehler.
+  Tray**: **Rot für Aufnahme**, **Orange für Transkription / KI-Verarbeitung**.
+  Grün steht für bereit, Hellrot für einen Fehler. Die Statusfarben sind von den
+  goldenen Bedienelementen getrennt.
 - Blitztext startet nur im Systemtray; das Hauptfenster wird bei Bedarf geöffnet.
 
 Die Bilder sind Aufnahmen der tatsächlichen Qt-Oberfläche mit demonstriertem
@@ -235,17 +236,17 @@ Das Mikrofon im System-Tray ist dein Indikator für den aktuellen Zustand:
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-recording.png" width="60"><br><br>
-        <b>Gold</b> (RECORDING)<br>
+        <b>Rot</b> (RECORDING)<br>
         <i>Aufnahme läuft aktiv.</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-processing.png" width="60"><br><br>
-        <b>Pale gold</b> (TRANSCRIBING / LLM_REWRITING)<br>
+        <b>Orange</b> (TRANSCRIBING / LLM_REWRITING)<br>
         <i>Magie läuft (Transkription / KI-Umformulierung).</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-error.png" width="60"><br><br>
-        <b>Rot</b> (ERROR)<br>
+        <b>Hellrot</b> (ERROR)<br>
         <i>Ups, etwas ist schiefgelaufen.</i>
       </td>
     </tr>
@@ -297,7 +298,7 @@ Das Hauptfenster ist ein kompaktes, rahmenloses Desktop-Widget mit einheitlicher
 - **Zentrales Gold-Mikrofon:** Markanter kreisrunder Button mit metallischem Farbverlauf und Blitz-Aussparung. Klick startet oder beendet die Aufnahme.
 - **Dynamische visuelle Rückmeldung:**
   - **Bereit (IDLE):** Grüner Statuspunkt und Zeitanzeige (`Bereit: 00:00`).
-  - **Aufnahme (RECORDING):** Gelber Statuspunkt, sekundengenaue Zeitanzeige und animierte Wellenbalken links und rechts des Mikrofons.
+  - **Aufnahme (RECORDING):** Roter Statuspunkt, sekundengenaue Zeitanzeige und animierte Wellenbalken links und rechts des Mikrofons.
   - **Verarbeitung (TRANSCRIBING):** Rotierender goldener Kreisbogen um das Mikrofon (`Transkribiere…`).
 - **Umschalter Lokal | Mit KI:** Zwei Knöpfe direkt unter dem Mikrofon. **Lokal** = Transkription ohne KI-Nachbearbeitung; mit einem lokalen Spracherkennungs-Backend bleibt das Audio auf dem Rechner. **Mit KI** ergänzt die Bearbeitung durch den konfigurierten KI-Endpunkt, zum Beispiel den GX10. Die gewählte Seite ist gold; die Zustandszeile darunter (zum Beispiel `Lokal · Whisper base` oder `Mit KI · OpenAI · Verbessern`) zeigt, was die nächste Aufnahme tut, und öffnet per Klick das Detail-Popup. Hotkey-Workflows stellen den Umschalter auf die passende Seite, während der Aufnahme ist er gesperrt.
 - **Kompakte Werkzeugleiste:**

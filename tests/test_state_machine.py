@@ -893,6 +893,26 @@ class TestMainWindowControl:
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         QTest.qWait(20)
 
+    def test_overlay_and_tray_use_red_recording_and_orange_processing(self, gui_app):
+        from collections import Counter
+
+        for state in ("RECORDING", "TRANSCRIBING", "LLM_REWRITING"):
+            gui_app._set_state(state, "test indicator colour")
+            overlay = gui_app._recording_overlay
+            assert overlay.isVisible()
+            image = overlay.icon.pixmap().toImage()
+            assert image == gui_app.tray_icon.icon().pixmap(24, 24).toImage()
+            opaque = [image.pixelColor(x, y).getRgb()[:3]
+                      for x in range(image.width()) for y in range(image.height())
+                      if image.pixelColor(x, y).alpha() > 240]
+            (red, green, blue), _ = Counter(opaque).most_common(1)[0]
+            if state == "RECORDING":
+                assert red > green * 1.5 and red > blue * 1.5
+            else:
+                assert red > green > blue and green > 120 and red - green > 40
+        gui_app._set_state("IDLE", "test finished")
+        assert not gui_app._recording_overlay.isVisible()
+
     def test_dictation_mode_syncs_window_and_tray(self, gui_app):
         win = gui_app._ensure_main_window()
         gui_app.set_dictation_mode(True)
