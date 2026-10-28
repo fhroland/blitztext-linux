@@ -4,6 +4,7 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: blitztext-linux-ci-${{ github.ref }}
