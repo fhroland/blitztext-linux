@@ -34,6 +34,7 @@ DEFAULTS: dict[str, Any] = {
     "backend": "openai-whisper",
     "hotkey_mode": "hold",
     "transcription_hotkey": "KEY_LEFTALT",
+    "preferred_workflow": "transcription",
     "openai_api_key_env": "OPENAI_API_KEY",
     # Variable name of the OpenAI key while another provider uses openai_api_key_env.
     "openai_provider_key_env": "",
@@ -343,6 +344,20 @@ class BlitztextConfig:
     @language.setter
     def language(self, value: str) -> None:
         self._data["language"] = normalize_transcription_language(value)
+
+    @property
+    def preferred_workflow(self) -> str:
+        from app.workflows import WorkflowType
+        value = self._data.get("preferred_workflow", "transcription")
+        try:
+            return WorkflowType(value).value
+        except (ValueError, TypeError):
+            return "transcription"
+
+    @preferred_workflow.setter
+    def preferred_workflow(self, value: str) -> None:
+        from app.workflows import WorkflowType
+        self._data["preferred_workflow"] = WorkflowType(value).value
 
     @property
     def ui_language(self) -> str:
@@ -707,6 +722,15 @@ def _normalize_base_url(value: Any) -> str:
     if _looks_like_alternate_numeric_ipv4(hostname):
         raise ValueError("LLM base URL must use a canonical IP address")
     if parsed.scheme.lower() == "https":
+        return candidate
+
+    # User-approved GX10 API on the private Tailscale link. Scope this local
+    # exception to the tested host, port and API path; retain HTTPS elsewhere.
+    if (
+        hostname.lower() == "ts-rgrdgx10" and port == 8000
+        and parsed.path.rstrip("/") == "/v1"
+        and not parsed.query and not parsed.fragment
+    ):
         return candidate
 
     if hostname.lower() == "localhost":

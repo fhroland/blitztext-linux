@@ -490,11 +490,13 @@ gui_only = pytest.mark.skipif(not _GUI, reason="benötigt WHISPER_GUI_TESTS=1 (D
 
 
 @pytest.fixture
-def gui_app():
+def gui_app(tmp_path):
     from PyQt6.QtWidgets import QApplication
     from app.blitztext_linux import BlitztextApp
     qapp = QApplication.instance() or QApplication([])
-    app = BlitztextApp(qapp)
+    from app.config import Config
+    with patch("app.blitztext_linux.Config.load", return_value=Config(config_dir=tmp_path)):
+        app = BlitztextApp(qapp)
     app.stop_hotkey_worker()  # kein echter evdev-Thread im Test
     try:
         yield app

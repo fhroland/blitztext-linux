@@ -31,16 +31,17 @@ gui_only = pytest.mark.skipif(not _GUI, reason="benötigt WHISPER_GUI_TESTS=1 (D
 def tray_app(tmp_path, monkeypatch):
     """Echte App mit isolierter Config (tmp), ohne evdev-Thread.
 
-    Die Config wird nach dem Boot auf ein tmp-Verzeichnis umgehängt, damit der
-    Handler ``config.save()`` nie in die echte User-Config schreibt. Das
-    Preset-Menü wird danach neu synchronisiert.
+    Die Config ist bereits beim Boot isoliert, damit weder private Einstellungen
+    gelesen noch Hintergrund-Verbindungsprüfungen daraus gestartet werden.
     """
     from PyQt6.QtWidgets import QApplication
     from app.blitztext_linux import BlitztextApp
 
     qapp = QApplication.instance() or QApplication([])
     monkeypatch.setattr(BlitztextApp, "start_hotkey_worker", lambda self: None)
-    app = BlitztextApp(qapp)
+    config = BlitztextConfig(config_dir=tmp_path / ".config" / "blitztext-linux")
+    with patch("app.blitztext_linux.Config.load", return_value=config):
+        app = BlitztextApp(qapp)
     app.stop_hotkey_worker()  # kein echter evdev-Thread im Test
 
     app.config = BlitztextConfig(config_dir=tmp_path / ".config" / "blitztext-linux")

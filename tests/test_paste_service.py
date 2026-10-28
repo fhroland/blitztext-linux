@@ -25,7 +25,7 @@ from app.paste_service import (
 class TestDetectActiveWindowClass:
     def test_returns_lowercase_class_on_success(self):
         result = MagicMock(stdout="Konsole\n", returncode=0)
-        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=False):
+        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=True):
             with patch("app.paste_service.shutil.which", return_value="/usr/bin/xdotool"):
                 with patch("app.paste_service.subprocess.run", return_value=result) as run_mock:
                     assert _detect_active_window_class() == "konsole"
@@ -39,14 +39,14 @@ class TestDetectActiveWindowClass:
         )
 
     def test_returns_none_if_xdotool_missing(self):
-        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=False):
+        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=True):
             with patch("app.paste_service.shutil.which", return_value=None):
                 with patch("app.paste_service.subprocess.run") as run_mock:
                     assert _detect_active_window_class() is None
         run_mock.assert_not_called()
 
     def test_returns_none_on_timeout(self):
-        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=False):
+        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=True):
             with patch("app.paste_service.shutil.which", return_value="/usr/bin/xdotool"):
                 with patch(
                     "app.paste_service.subprocess.run",
@@ -55,7 +55,7 @@ class TestDetectActiveWindowClass:
                     assert _detect_active_window_class() is None
 
     def test_returns_none_on_called_process_error(self):
-        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=False):
+        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=True):
             with patch("app.paste_service.shutil.which", return_value="/usr/bin/xdotool"):
                 with patch(
                     "app.paste_service.subprocess.run",
@@ -67,7 +67,7 @@ class TestDetectActiveWindowClass:
                     assert _detect_active_window_class() is None
 
     def test_returns_none_on_oserror(self):
-        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=False):
+        with patch.dict(os.environ, {"DISPLAY": ":0"}, clear=True):
             with patch("app.paste_service.shutil.which", return_value="/usr/bin/xdotool"):
                 with patch(
                     "app.paste_service.subprocess.run",
@@ -82,6 +82,28 @@ class TestDetectActiveWindowClass:
                     assert _detect_active_window_class() is None
         which_mock.assert_not_called()
         run_mock.assert_not_called()
+
+
+class TestWaylandWindowDetection:
+    def test_native_kde_terminal_takes_precedence_over_xwayland(self):
+        with patch.dict(os.environ, {"WAYLAND_DISPLAY": "wayland-0", "DISPLAY": ":0"}, clear=True):
+            with patch("app.paste_service.shutil.which", side_effect=lambda name: "/usr/bin/" + name):
+                with patch("app.paste_service.subprocess.run", return_value=MagicMock(stdout="org.kde.konsole\n")) as run:
+                    assert _detect_active_window_class() == "org.kde.konsole"
+        assert run.call_count == 1
+        assert run.call_args.args[0] == ["kdotool", "getactivewindow", "getwindowclassname"]
+
+    def test_null_xwayland_class_uses_terminal_safe_fallback(self):
+        with patch.dict(os.environ, {"WAYLAND_DISPLAY": "wayland-0", "DISPLAY": ":0"}, clear=True):
+            with patch("app.paste_service.shutil.which", side_effect=lambda name: None if name == "kdotool" else "/usr/bin/xdotool"):
+                with patch("app.paste_service.subprocess.run", return_value=MagicMock(stdout="(null)\n")):
+                    assert _detect_active_window_class() is None
+
+    def test_failed_kde_query_can_still_detect_xwayland_window(self):
+        with patch.dict(os.environ, {"WAYLAND_DISPLAY": "wayland-0", "DISPLAY": ":0"}, clear=True):
+            with patch("app.paste_service.shutil.which", side_effect=lambda name: "/usr/bin/" + name):
+                with patch("app.paste_service.subprocess.run", side_effect=[subprocess.TimeoutExpired("kdotool", 2), MagicMock(stdout="Kate\n")]):
+                    assert _detect_active_window_class() == "kate"
 
 
 class TestYdotoolPaste:

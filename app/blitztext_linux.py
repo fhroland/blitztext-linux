@@ -14,7 +14,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Optional
 
-from PyQt6.QtCore import QObject, Qt, QThread, QThreadPool, QRunnable, QUrl, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, Qt, QTimer, QThread, QThreadPool, QRunnable, QUrl, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import (
     QAction, QActionGroup, QBrush, QColor, QDesktopServices, QIcon, QPainter, QPen, QPixmap,
 )
@@ -52,6 +52,7 @@ from app.history_panel import HistoryPanel
 from app.compose_window import ComposeWindow
 from app.tts_window import TtsWindow
 from app.main_window import MainWindow
+from app.recording_overlay import RecordingOverlay
 from app.i18n import LANGUAGES, LANGUAGE_DISPLAY_NAMES, set_language, t, tq
 from app import notify as notify_service
 from app import theme
@@ -794,6 +795,8 @@ class _TranscribeWorker(QRunnable):
 class BlitztextApp(QObject):
     """Main Blitztext Linux application coordinator."""
 
+    ai_probe_finished = pyqtSignal(bool)
+
     def __init__(self, app: QApplication) -> None:
         super().__init__()
         self.app = app
@@ -818,6 +821,7 @@ class BlitztextApp(QObject):
         self._compose_window: Optional[ComposeWindow] = None
         self._tts_window: Optional[TtsWindow] = None
         self._main_window: Optional[MainWindow] = None
+        self._recording_overlay: Optional[RecordingOverlay] = None
 
         # Tray setup
         self.setup_tray()
@@ -829,6 +833,21 @@ class BlitztextApp(QObject):
         # dropping a running parentless QThread aborts the process (qFatal).
         self._retired_hotkey_threads: list[QThread] = []
         self.start_hotkey_worker()
+        self.ai_probe_finished.connect(self._on_ai_probe_finished)
+        QTimer.singleShot(0, self._check_restored_ai_mode)
+
+        if os.environ.get("BLITZTEXT_PRELOAD_MODEL") == "1" and self.config.backend == "faster-whisper":
+            import threading
+            from app.transcribe import preload_faster_model
+
+            def preload():
+                try:
+                    preload_faster_model(self.config.model)
+                    logger.info("GPU model preloaded and ready: %s", self.config.model)
+                except Exception:
+                    logger.exception("Model preload failed; dictation will retry")
+
+            threading.Thread(target=preload, daemon=True, name="model-preload").start()
 
     def _build_llm_service(self) -> LLMService:
         """Baut den LLMService aus der aktuellen Config.
@@ -915,15 +934,15 @@ class BlitztextApp(QObject):
         self.action_transcription.triggered.connect(lambda: self._trigger_menu_workflow(WorkflowType.TRANSCRIPTION))
         self.menu.addAction(self.action_transcription)
 
-        self.action_local = QAction(f"{tq('workflow.local.name')}\tMeta+Shift+H", self)
+        self.action_local = QAction(f"{tq('workflow.local.name')}\tMeta+Shift+D", self)
         self.action_local.triggered.connect(lambda: self._trigger_menu_workflow(WorkflowType.LOCAL))
         self.menu.addAction(self.action_local)
 
-        self.action_improver = QAction(f"{tq('workflow.text_improver.name')}\tMeta+Shift+T", self)
+        self.action_improver = QAction(f"{tq('workflow.text_improver.name')}\tMeta+Shift+V", self)
         self.action_improver.triggered.connect(lambda: self._trigger_menu_workflow(WorkflowType.TEXT_IMPROVER))
         self.menu.addAction(self.action_improver)
 
-        self.action_dampf = QAction(f"{tq('workflow.dampf_ablassen.name')}\tMeta+Shift+D", self)
+        self.action_dampf = QAction(f"{tq('workflow.dampf_ablassen.name')}\tMeta+Shift+S", self)
         self.action_dampf.triggered.connect(lambda: self._trigger_menu_workflow(WorkflowType.DAMPF_ABLASSEN))
         self.menu.addAction(self.action_dampf)
 
@@ -1035,11 +1054,11 @@ class BlitztextApp(QObject):
                 f"{tq('workflow.transcription.name')}\t{hotkey_display_name(self.config.transcription_hotkey)}"
             )
         if hasattr(self, "action_local"):
-            self.action_local.setText(f"{tq('workflow.local.name')}\tMeta+Shift+H")
+            self.action_local.setText(f"{tq('workflow.local.name')}\tMeta+Shift+D")
         if hasattr(self, "action_improver"):
-            self.action_improver.setText(f"{tq('workflow.text_improver.name')}\tMeta+Shift+T")
+            self.action_improver.setText(f"{tq('workflow.text_improver.name')}\tMeta+Shift+V")
         if hasattr(self, "action_dampf"):
-            self.action_dampf.setText(f"{tq('workflow.dampf_ablassen.name')}\tMeta+Shift+D")
+            self.action_dampf.setText(f"{tq('workflow.dampf_ablassen.name')}\tMeta+Shift+S")
         if hasattr(self, "action_emoji"):
             self.action_emoji.setText(f"{tq('workflow.emoji_text.name')}\tMeta+Shift+E")
         if hasattr(self, "menu_preset"):
@@ -1228,7 +1247,7 @@ class BlitztextApp(QObject):
         self.hotkey_worker.moveToThread(self.hotkey_thread)
 
         self.hotkey_thread.started.connect(self.hotkey_worker.run)
-        self.hotkey_worker.workflow_triggered.connect(self._on_workflow_triggered)
+        self.hotkey_worker.workflow_triggered.connect(self._on_hotkey_workflow_triggered)
         self.hotkey_worker.recording_stop.connect(self._on_recording_stop)
         self.hotkey_worker.recording_discard.connect(self.gui_discard)
         self.hotkey_worker.error.connect(self._on_hotkey_error)
@@ -1284,6 +1303,51 @@ class BlitztextApp(QObject):
                     self.config.transcription_hotkey,
                 )
                 self.start_hotkey_worker()
+
+    def main_window_workflow_changed(self, workflow: WorkflowType) -> None:
+        if self.config.preferred_workflow == workflow.value:
+            return
+        self.config.preferred_workflow = workflow.value
+        self.config.save()
+        if workflow in LLM_WORKFLOWS:
+            self._check_restored_ai_mode()
+
+    @pyqtSlot(object)
+    def _on_hotkey_workflow_triggered(self, workflow: WorkflowType) -> None:
+        if workflow == WorkflowType.TRANSCRIPTION:
+            workflow = WorkflowType(self.config.preferred_workflow)
+        self._on_workflow_triggered(workflow)
+
+    def _check_restored_ai_mode(self) -> None:
+        if WorkflowType(self.config.preferred_workflow) not in LLM_WORKFLOWS:
+            return
+        import threading
+        service = self.llm_service
+
+        def check():
+            ok = False
+            if service.is_available():
+                try:
+                    # Lightweight reachability/authentication probe: no dictation
+                    # or generation request, bounded timeout and no retries.
+                    service.client.with_options(timeout=4.0, max_retries=0).models.list()
+                    ok = True
+                except Exception:
+                    pass  # Never log credentials, URLs or raw server errors here.
+            if self.llm_service is service:
+                try:
+                    self.ai_probe_finished.emit(ok)
+                except RuntimeError:
+                    pass  # Qt receiver already destroyed during application exit.
+
+        threading.Thread(target=check, daemon=True, name="ai-connection-check").start()
+
+    @pyqtSlot(bool)
+    def _on_ai_probe_finished(self, ok: bool) -> None:
+        if ok or WorkflowType(self.config.preferred_workflow) not in LLM_WORKFLOWS:
+            return
+        # A visible dialog is needed even when the tray and main window are hidden.
+        QMessageBox.warning(None, t("startup.ai.title"), t("startup.ai.warning"))
 
     def _trigger_menu_workflow(self, workflow: WorkflowType) -> None:
         self._on_workflow_triggered(workflow)
@@ -1676,6 +1740,16 @@ class BlitztextApp(QObject):
 
     def _on_state_changed(self) -> None:
         self.update_tray_state()
+        overlay = getattr(self, "_recording_overlay", None)
+        if self.state in ("RECORDING", "TRANSCRIBING", "LLM_REWRITING"):
+            if overlay is None:
+                overlay = RecordingOverlay(self.audio_recorder)
+                self._recording_overlay = overlay
+            if self.state == "RECORDING" and not overlay.isVisible():
+                overlay.start(self.config.transcription_hotkey, self.config.hotkey_mode)
+            overlay.set_status(self.state, self.tray_icon.icon())
+        elif overlay is not None:
+            overlay.stop()
         if self._main_window is not None:
             self._main_window.update_state(self.state, self.current_workflow, self._tray_error_message)
 
@@ -1698,6 +1772,9 @@ class BlitztextApp(QObject):
         elif self.state == "LLM_REWRITING":
             self.tray_icon.setIcon(self._tray_icons["LLM_REWRITING"])
             self.tray_icon.setToolTip(t("mainwindow.status.processing"))
+        overlay = getattr(self, "_recording_overlay", None)
+        if overlay is not None:
+            overlay.set_tray_icon(self.tray_icon.icon())
 
     @pyqtSlot(str)
     def _on_hotkey_error(self, err_msg: str) -> None:
@@ -1791,7 +1868,7 @@ def main() -> int:
         logging.warning("Theme/App-Icon konnte nicht angewendet werden: %s", exc)
 
     blitztext = BlitztextApp(app)
-    blitztext.show_main_window()
+    # Start in the system tray; open the main window only on user request.
 
     exit_code = app.exec()
 

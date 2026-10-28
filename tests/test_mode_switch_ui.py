@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from types import SimpleNamespace
 
 import pytest
 
@@ -29,6 +30,7 @@ def qapp():
 class _Controller:
     def __init__(self) -> None:
         self.calls: list[object] = []
+        self.config = SimpleNamespace(preferred_workflow="transcription")
 
     def __getattr__(self, name):
         def call(*args, **kwargs):

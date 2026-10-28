@@ -263,6 +263,9 @@ class MainWindow(QWidget):
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._update_timer_label)
         self._setup_ui()
+        config = getattr(controller, "config", None)
+        if config is not None:
+            self._select_workflow(WorkflowType(config.preferred_workflow))
         self.update_state("IDLE", None, None)
         self._refresh_mode_summary()
 
@@ -549,6 +552,9 @@ class MainWindow(QWidget):
     @pyqtSlot()
     def _on_workflow_changed(self) -> None:
         self._sync_mode_widgets()
+        callback = getattr(self._controller, "main_window_workflow_changed", None)
+        if callback is not None:
+            callback(self._selected_workflow())
 
     def _segment_button(self, text: str, side: str) -> QPushButton:
         button = QPushButton(text, self._main_panel)
@@ -741,7 +747,7 @@ class MainWindow(QWidget):
                 self._workflow_combo.blockSignals(True)
                 self._workflow_combo.setCurrentIndex(index)
                 self._workflow_combo.blockSignals(False)
-                self._on_workflow_changed()
+                self._sync_mode_widgets()
                 return
 
     def _set_status(self, text: str, color: str) -> None:

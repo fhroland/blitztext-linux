@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWid
 
 from app import __version__
 from app.i18n import t
+from app.update_policy import updates_disabled
 
 # Keep jobs alive even when their settings dialog is destroyed. Qt disconnects
 # the receiver automatically; no worker ever accesses a widget directly.
@@ -57,6 +58,10 @@ class UpdateController(QObject):
 
     @pyqtSlot()
     def check(self):
+        if updates_disabled():
+            self.status, self.status_args = 'updates.disabled', {}
+            self.changed.emit()
+            return
         if self.job is not None or self.installed:
             return
         self.release = None
@@ -67,6 +72,10 @@ class UpdateController(QObject):
 
     @pyqtSlot()
     def install(self):
+        if updates_disabled():
+            self.status, self.status_args = 'updates.disabled', {}
+            self.changed.emit()
+            return
         if self.job is not None or self.release is None or self.installed:
             return
         self.installing = True
@@ -137,7 +146,9 @@ class UpdateWidget(QWidget):
     @pyqtSlot()
     def _refresh(self):
         controller = self._controller
-        idle = controller.job is None and not controller.installed
+        locked = updates_disabled()
+        idle = not locked and controller.job is None and not controller.installed
         self.check_button.setEnabled(idle)
         self.install_button.setEnabled(idle and controller.release is not None)
-        self.status_label.setText(t(controller.status).format(**controller.status_args))
+        self.status_label.setText(t('updates.disabled') if locked else
+                                  t(controller.status).format(**controller.status_args))

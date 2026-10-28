@@ -78,24 +78,28 @@ _YDOTOOL_MISSING_DAEMON_MARKERS = (
 
 
 def _detect_active_window_class() -> Optional[str]:
-    """Return the active X11/XWayland window class if xdotool can see it."""
-    if not os.environ.get("DISPLAY"):
-        return None
-    if shutil.which("xdotool") is None:
-        return None
-    try:
-        result = subprocess.run(
-            ["xdotool", "getactivewindow", "getwindowclassname"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            timeout=_XDOTOOL_TIMEOUT,
-        )
-    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError):
-        return None
-    window_class = result.stdout.strip().lower()
-    return window_class or None
+    """Detect native KDE/Wayland windows before falling back to X11."""
+    commands = []
+    if os.environ.get("WAYLAND_DISPLAY") and shutil.which("kdotool"):
+        commands.append(["kdotool", "getactivewindow", "getwindowclassname"])
+    if os.environ.get("DISPLAY") and shutil.which("xdotool"):
+        commands.append(["xdotool", "getactivewindow", "getwindowclassname"])
+    for command in commands:
+        try:
+            result = subprocess.run(
+                command,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=_XDOTOOL_TIMEOUT,
+            )
+        except (subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError):
+            continue
+        window_class = result.stdout.strip().lower()
+        if window_class and window_class not in {"(null)", "null", "none"}:
+            return window_class
+    return None
 
 
 class PasteServiceError(Exception):

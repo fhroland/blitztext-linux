@@ -952,3 +952,28 @@ class TestTranscriptionApiKey:
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         config.backend = "openai-cloud"
         assert config.resolve_transcription_api_key() == ""
+
+
+def test_authorized_gx10_endpoint_survives_save_and_reload(tmp_path):
+    config = BlitztextConfig(config_dir=tmp_path)
+    config.llm_provider = "custom"
+    config.llm_base_url = "http://ts-rgrdgx10:8000/v1"
+    config.llm_model = "dgx10-local"
+    config.save()
+    restored = BlitztextConfig(config_dir=tmp_path)
+    assert restored.llm_base_url == "http://ts-rgrdgx10:8000/v1"
+    assert restored.llm_model == "dgx10-local"
+
+
+@pytest.mark.parametrize("url", [
+    "http://ts-rgrdgx10:8001/v1",
+    "http://ts-rgrdgx10:8000/api/v1",
+    "http://ts-rgrdgx10.example.com:8000/v1",
+    "http://100.110.176.60:8000/v1",
+    "http://ts-rgrdgx10:8000/v1?extra=1",
+    "http://ts-rgrdgx10:8000/v1#fragment",
+])
+def test_gx10_http_exception_does_not_allow_other_endpoints(url, tmp_path):
+    config = BlitztextConfig(config_dir=tmp_path)
+    with pytest.raises(ValueError):
+        config.llm_base_url = url

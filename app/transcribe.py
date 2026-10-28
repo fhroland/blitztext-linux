@@ -5,7 +5,7 @@ Supports both openai-whisper and faster-whisper backends.
 
 Loaded models stay cached between dictations and are released after
 BLITZTEXT_MODEL_CACHE_SECONDS of inactivity (default 600; 0 disables caching
-and reloads the model for every call).
+and reloads the model for every call; -1 keeps it until process exit).
 """
 from __future__ import annotations
 
@@ -129,7 +129,7 @@ def _model_cache_idle_seconds() -> float:
     if not raw.strip():
         return _MODEL_CACHE_DEFAULT_SECONDS
     try:
-        return max(0.0, float(raw))
+        return float(raw)
     except ValueError:
         logger.warning("Invalid %s=%r, using %.0fs", _MODEL_CACHE_ENV, raw, _MODEL_CACHE_DEFAULT_SECONDS)
         return _MODEL_CACHE_DEFAULT_SECONDS
@@ -149,7 +149,7 @@ def _schedule_model_unload(idle_seconds: float) -> None:
 def _get_model(key: tuple, loader: Callable[[], Any]) -> Any:
     """Return a cached model for ``key`` or load it; only one model stays resident."""
     idle_seconds = _model_cache_idle_seconds()
-    if idle_seconds <= 0:
+    if idle_seconds == 0:
         return loader()
     with _model_cache_lock:
         model = _model_cache.get(key)
@@ -160,7 +160,8 @@ def _get_model(key: tuple, loader: Callable[[], Any]) -> Any:
             model = loader()
             _model_cache[key] = model
             logger.info("Whisper model loaded and cached: %s", key)
-        _schedule_model_unload(idle_seconds)
+        if idle_seconds > 0:
+            _schedule_model_unload(idle_seconds)
     return model
 
 
@@ -296,15 +297,8 @@ def _transcribe_faster(
     hint: str | None = None,
     hotwords: str | None = None,
 ) -> str:
-    WhisperModel = _load_faster_whisper_model_class()
+    model = preload_faster_model(model_name)
 
-    hf_cache = os.path.expanduser("~/.cache/huggingface/hub")
-    os.makedirs(hf_cache, exist_ok=True)
-
-    model = _get_model(
-        ("faster-whisper", model_name),
-        lambda: WhisperModel(model_name, device="auto", compute_type="int8"),
-    )
     segments, _ = model.transcribe(
         wav_file,
         language=_normalize_language(language),
@@ -313,6 +307,19 @@ def _transcribe_faster(
     )
     parts = [getattr(seg, "text", "") for seg in segments]
     return " ".join(parts).strip()
+
+
+def preload_faster_model(model_name: str):
+    """Load into the same cache used by dictations; -1 retains it until exit."""
+    WhisperModel = _load_faster_whisper_model_class()
+
+    hf_cache = os.path.expanduser("~/.cache/huggingface/hub")
+    os.makedirs(hf_cache, exist_ok=True)
+
+    return _get_model(
+        ("faster-whisper", model_name),
+        lambda: WhisperModel(model_name, device=os.environ.get("BLITZTEXT_WHISPER_DEVICE", "auto"), compute_type="int8"),
+    )
 
 
 def _resolve_openrouter_model(model_name: str) -> str:

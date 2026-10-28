@@ -103,6 +103,18 @@ def test_model_is_cached_between_calls_and_reloaded_after_unload(tmp_path: Path,
         assert module.loads == ["base", "small", "small"]
 
 
+def test_negative_cache_timeout_keeps_preloaded_model_without_timer(monkeypatch):
+    monkeypatch.setenv("BLITZTEXT_MODEL_CACHE_SECONDS", "-1")
+    transcribe_module.unload_cached_models()
+    model = object()
+    with patch("app.transcribe._schedule_model_unload") as schedule:
+        first = transcribe_module._get_model(("preload",), lambda: model)
+        second = transcribe_module._get_model(("preload",), lambda: None)
+        assert first is second is model
+        schedule.assert_not_called()
+    transcribe_module.unload_cached_models()
+
+
 def test_model_cache_disabled_reloads_every_call(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("BLITZTEXT_MODEL_CACHE_SECONDS", "0")
     wav_file = tmp_path / "sample.wav"

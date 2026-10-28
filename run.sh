@@ -9,7 +9,8 @@ DATA_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}"
 if [[ "${DATA_HOME}" != /* ]]; then DATA_HOME="${HOME}/.local/share"; fi
 RELEASES_DIR="${DATA_HOME}/blitztext-linux/releases"
 APP_DIR="${SCRIPT_DIR}"
-if [[ -z "${FLATPAK_ID:-}" && ! -f /.flatpak-info ]]; then
+# A customized installation must never switch to a downloaded release.
+if [[ -z "${FLATPAK_ID:-}" && ! -f /.flatpak-info && ! -e "${SCRIPT_DIR}/.updates-disabled" && "${BLITZTEXT_DISABLE_UPDATES:-0}" != 1 ]]; then
     RELEASES_REAL="$(readlink -f -- "${RELEASES_DIR}" 2>/dev/null || true)"
     for POINTER in current previous; do
         [[ -L "${RELEASES_DIR}/${POINTER}" ]] || continue

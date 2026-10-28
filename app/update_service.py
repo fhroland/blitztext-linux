@@ -28,6 +28,8 @@ import urllib.parse
 import urllib.request
 import uuid
 
+from app.update_policy import updates_disabled
+
 REPOSITORY = 'TimInTech/blitztext-linux'
 LATEST_URL = f'https://api.github.com/repos/{REPOSITORY}/releases/latest'
 DOWNLOAD_BASE = f'https://github.com/{REPOSITORY}/releases/download/'
@@ -104,10 +106,13 @@ class UpdateService:
 
     @staticmethod
     def _supported():
+        if updates_disabled():
+            raise UpdateError('Updates are disabled to protect this locally customized installation.')
         if os.environ.get('FLATPAK_ID') or Path('/.flatpak-info').exists():
             raise UpdateError('Flatpak updates are unsupported here; update through your Flatpak software manager.')
 
     def _fetch(self, url: str, limit: int) -> bytes:
+        self._supported()
         if not _allowed_url(url):
             raise UpdateError('Untrusted release URL.')
         request = urllib.request.Request(url, headers={

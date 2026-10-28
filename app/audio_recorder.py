@@ -12,6 +12,8 @@ Design:
 from __future__ import annotations
 
 import logging
+import math
+import struct
 import os
 import shutil
 import signal
@@ -238,6 +240,47 @@ class AudioRecorder:
         """True only while this instance's recording child is alive."""
         return self._live_pid() is not None
 
+    def current_level(self) -> float:
+        """RMS level (0..1) from the most recent 100 ms, without another capture.
+
+        Use the pinned job directory and a bounded read. parec uses s16le mono;
+        scanning the RIFF chunks avoids treating a header as microphone samples.
+        """
+        if self._job_fd is None or self._process is None:
+            return 0.0
+        fd = None
+        try:
+            fd = os.open("recording.wav", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                         dir_fd=self._job_fd)
+            header = os.pread(fd, 4096, 0)
+            if header[:4] != b"RIFF" or header[8:12] != b"WAVE":
+                return 0.0
+            offset = 12
+            while offset + 8 <= len(header):
+                name = header[offset:offset + 4]
+                size = struct.unpack_from("<I", header, offset + 4)[0]
+                offset += 8
+                if name == b"data":
+                    break
+                offset += size + size % 2
+            else:
+                return 0.0
+            end = os.fstat(fd).st_size
+            count = max(0, end - offset) // 2
+            count = min(count, _RATE // 10)
+            if not count:
+                return 0.0
+            data = os.pread(fd, count * 2, offset + ((end - offset) // 2 - count) * 2)
+            samples = struct.unpack("<" + "h" * (len(data) // 2), data)
+            rms = math.sqrt(sum(sample * sample for sample in samples) / len(samples)) / 32768
+            # Display -60..0 dBFS so quiet speech is visible too.
+            return max(0.0, min(1.0, (20 * math.log10(max(rms, 1e-6)) + 60) / 60))
+        except (OSError, ValueError, struct.error):
+            return 0.0
+        finally:
+            if fd is not None:
+                os.close(fd)
+
     def start_recording(self, device: str = "@DEFAULT_SOURCE@") -> Path:
         return self.start(device)
 
@@ -310,6 +353,7 @@ class AudioRecorder:
                     "parec",
                     f"--device={device}",
                     "--file-format=wav",
+                    "--format=s16le",
                     f"--rate={_RATE}",
                     f"--channels={_CHANNELS}",
                     f"--latency-msec={_LATENCY_MS}",

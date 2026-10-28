@@ -4,6 +4,7 @@ Verwaltet alle 5 Workflow-Hotkeys via evdev.
 Unterstützt zwei Modi:
   - toggle: einmal drücken = starten, nochmal = stoppen (Standard)
   - hold:   Taste halten = aufnehmen, loslassen = stoppen
+Im Toggle-Modus löst rechte Strg erst beim Loslassen ohne Tastenkombination aus.
 """
 from __future__ import annotations
 
@@ -28,8 +29,8 @@ logger = logging.getLogger("blitztext.hotkey")
 _HOTKEY_DISPLAY_NAMES = {
     "KEY_LEFTALT": "Alt",
     "KEY_RIGHTALT": "AltGr",
-    "KEY_LEFTCTRL": "Ctrl",
-    "KEY_RIGHTCTRL": "Ctrl",
+    "KEY_LEFTCTRL": "Left Ctrl",
+    "KEY_RIGHTCTRL": "Right Ctrl",
     "KEY_F13": "F13",
     "KEY_F14": "F14",
     "KEY_F15": "F15",
@@ -43,15 +44,18 @@ _HOTKEY_DISPLAY_NAMES = {
 
 def hotkey_display_name(key_name: str) -> str:
     """Menschenlesbarer Name der Aufnahmetaste für Menü- und UI-Labels."""
+    if key_name in {"KEY_LEFTCTRL", "KEY_RIGHTCTRL"}:
+        from app.i18n import t
+        return t("hotkey.rightctrl" if key_name == "KEY_RIGHTCTRL" else "hotkey.leftctrl")
     return _HOTKEY_DISPLAY_NAMES.get(key_name, key_name.removeprefix("KEY_").capitalize())
 
 # Hotkey-Definitionen: WorkflowType -> (modifier_set, trigger_key_name)
 _HOTKEY_MAP = [
     # (workflow, trigger_key, required_modifiers)
     (WorkflowType.TRANSCRIPTION,  "KEY_LEFTALT", set()),
-    (WorkflowType.LOCAL,          "KEY_H", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
-    (WorkflowType.TEXT_IMPROVER,  "KEY_T", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
-    (WorkflowType.DAMPF_ABLASSEN, "KEY_D", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
+    (WorkflowType.LOCAL,          "KEY_D", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
+    (WorkflowType.TEXT_IMPROVER,  "KEY_V", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
+    (WorkflowType.DAMPF_ABLASSEN, "KEY_S", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
     (WorkflowType.EMOJI_TEXT,     "KEY_E", {"KEY_LEFTMETA", "KEY_RIGHTMETA", "KEY_LEFTSHIFT", "KEY_RIGHTSHIFT"}),
 ]
 
@@ -224,6 +228,11 @@ class HotkeyWorker(QObject):
             }
             hotkeys.append((workflow, tcode, meta_codes, shift_codes))
 
+        # Right Ctrl remains usable as a modifier: only a standalone release
+        # toggles transcription. Other keys and hold mode keep their behavior.
+        solo_rightctrl = self._mode == "toggle" and self._transcription_key == "KEY_RIGHTCTRL"
+        rightctrl_pending = False
+
         next_device_refresh = time.monotonic() + DEVICE_REFRESH_SECONDS
         logger.debug(
             "Hotkey worker started mode=%s transcription_key=%s devices=%s wayland=%s display=%s",
@@ -246,6 +255,7 @@ class HotkeyWorker(QObject):
                         return
                 fd_to_dev = {dev.fd: dev for dev in devices}
                 pressed.clear()
+                rightctrl_pending = False
                 _hold_active = None
                 _hold_started_at = None
                 next_device_refresh = time.monotonic() + DEVICE_REFRESH_SECONDS
@@ -259,6 +269,7 @@ class HotkeyWorker(QObject):
                 if new_fd_to_dev is not fd_to_dev:
                     fd_to_dev = new_fd_to_dev
                     pressed.clear()
+                    rightctrl_pending = False
                     _hold_active = None
                     _hold_started_at = None
                 next_device_refresh = time.monotonic() + DEVICE_REFRESH_SECONDS
@@ -276,6 +287,7 @@ class HotkeyWorker(QObject):
                         if new_fd_to_dev is not fd_to_dev:
                             fd_to_dev = new_fd_to_dev
                             pressed.clear()
+                            rightctrl_pending = False
                             _hold_active = None
                             _hold_started_at = None
                         continue
@@ -291,6 +303,19 @@ class HotkeyWorker(QObject):
                         elif value == 0:
                             pressed.discard(code)
 
+                        rightctrl_released = False
+                        if solo_rightctrl:
+                            if code == ec.KEY_RIGHTCTRL:
+                                if value == 1:
+                                    rightctrl_pending = pressed == {code}
+                                elif value == 0:
+                                    rightctrl_released = rightctrl_pending and not pressed
+                                    rightctrl_pending = False
+                            elif value in (1, 2):
+                                # Remains cancelled even if the other key is
+                                # released before Ctrl. Autorepeat also counts.
+                                rightctrl_pending = False
+
                         # --- Hold-Modus: KEY_UP des aktiven Trigger-Keys stoppt ---
                         if self._mode == "hold" and value == 0 and _hold_active is not None:
                             for wf, tcode, _, _ in hotkeys:
@@ -305,8 +330,10 @@ class HotkeyWorker(QObject):
                                     _hold_started_at = None
                                     break
 
-                        if value != 1:
-                            continue  # nur KEY_DOWN-Events triggern
+                        if value != 1 and not rightctrl_released:
+                            continue
+                        if solo_rightctrl and code == ec.KEY_RIGHTCTRL and not rightctrl_released:
+                            continue  # Wait until a standalone Right Ctrl is released.
 
                         for workflow, tcode, meta_codes, shift_codes in hotkeys:
                             if code != tcode:
@@ -350,6 +377,7 @@ class HotkeyWorker(QObject):
                             DEVICE_REFRESH_SECONDS,
                         )
                     pressed.clear()
+                    rightctrl_pending = False
                     _hold_active = None
                     _hold_started_at = None
                     break

@@ -130,3 +130,10 @@ def test_reopened_widget_shares_running_install_and_result(qapp):
     assert [x[0] for x in service.calls].count('install') == 1
     assert '9.0.0' in second.status_label.text()
     second.deleteLater()
+
+
+@pytest.fixture(autouse=True)
+def _isolated_unlocked_update_policy(monkeypatch, tmp_path):
+    from app import update_policy
+    monkeypatch.delenv('BLITZTEXT_DISABLE_UPDATES', raising=False)
+    monkeypatch.setattr(update_policy, 'DISABLE_MARKER', tmp_path / 'no-lock-marker')

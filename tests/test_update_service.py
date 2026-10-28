@@ -287,3 +287,10 @@ def test_constructor_does_not_create_data_directory(tmp_path, monkeypatch):
     monkeypatch.setenv('XDG_DATA_HOME', str(data))
     u.UpdateService()
     assert not data.exists()
+
+
+@pytest.fixture(autouse=True)
+def _isolated_unlocked_update_policy(monkeypatch, tmp_path):
+    from app import update_policy
+    monkeypatch.delenv('BLITZTEXT_DISABLE_UPDATES', raising=False)
+    monkeypatch.setattr(update_policy, 'DISABLE_MARKER', tmp_path / 'no-lock-marker')

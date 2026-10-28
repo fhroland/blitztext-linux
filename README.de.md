@@ -1,3 +1,11 @@
+> **Persönlicher Anpassungs-Fork:** Dieses Repository sichert eine lokal angepasste
+> Installation von [TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux).
+> Es ist kein offizielles Release und keine separat vertriebene App. In-App-Updates
+> sind gesperrt. Vor Installation oder Upgrade bitte die
+> [lokalen Änderungen und den Upgrade-Ablauf](docs/local-customizations.md) lesen.
+> Die ursprüngliche Dokumentation darunter beschreibt Vorgaben, die von unserer
+> eingerichteten Installation abweichen können.
+
 <div align="center">
   <img src="docs/screenshots/linux/Banner-de.png" alt="Blitztext Linux Banner" width="860">
 

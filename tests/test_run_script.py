@@ -143,3 +143,32 @@ def test_previous_fallback_and_managed_launcher_do_not_recurse(tmp_path, current
     result = _run_script(script, home, runtime)
     assert result.returncode == 0
     assert f'previous:{previous}/app/blitztext_linux.py' in result.stdout
+
+
+@pytest.mark.parametrize('via_marker', [True, False])
+def test_update_lock_pins_customized_checkout_even_with_ready_release(tmp_path, monkeypatch, via_marker):
+    repo = Path(__file__).resolve().parents[1]
+    script = _prepare_run_script(tmp_path, repo)
+    home = tmp_path / 'home'
+    runtime = tmp_path / 'runtime'
+    runtime.mkdir()
+    releases = home / '.local/share/blitztext-linux/releases'
+    managed = releases / '9.9.9-abcdef'
+    (managed / 'app').mkdir(parents=True)
+    (managed / 'app/blitztext_linux.py').write_text('pass')
+    (managed / '.ready').touch()
+    python = managed / '.venv/bin/python'
+    python.parent.mkdir(parents=True)
+    python.write_text('#!/bin/bash\nprintf "managed release started\\n"\n')
+    python.chmod(0o755)
+    (releases / 'current').symlink_to(managed.name)
+    (releases / 'previous').symlink_to(managed.name)
+    if via_marker:
+        (tmp_path / '.updates-disabled').touch()
+        monkeypatch.delenv('BLITZTEXT_DISABLE_UPDATES', raising=False)
+    else:
+        monkeypatch.setenv('BLITZTEXT_DISABLE_UPDATES', '1')
+    result = _run_script(script, home, runtime)
+    assert result.returncode == 0
+    assert 'BT_SAMPLE_VAR=' in result.stdout
+    assert 'managed release started' not in result.stdout

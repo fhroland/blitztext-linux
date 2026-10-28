@@ -1,3 +1,10 @@
+> **Personal customization fork:** This repository preserves a locally adapted
+> installation based on [TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux).
+> It is not an official release or a separately distributed app. In-app updates
+> are disabled. See [local changes and upgrade procedure](docs/local-customizations.md)
+> before installing or updating. The upstream documentation below describes defaults
+> that can differ from this fork's installed configuration.
+
 <div align="center">
   <img src="docs/screenshots/linux/Banner-en.png" alt="Blitztext Linux Banner" width="860">
 

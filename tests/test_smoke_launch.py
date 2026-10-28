@@ -47,7 +47,9 @@ def test_app_boots_idles_and_exits_clean(ui_language, tmp_path):
             app = BlitztextApp(qapp)
         # Kein echter evdev-Thread waehrend des Idle-Loops (Pattern aus gui_app).
         app.stop_hotkey_worker()
-        # Hauptfenster offscreen hochfahren -- exakt wie main().
+        # Startup stays in the tray; the main window is opened on demand.
+        assert app._main_window is None
+        assert app.tray_icon.isVisible()
         app.show_main_window()
 
         # Kurz idlen, dann deterministisch sauber beenden.
