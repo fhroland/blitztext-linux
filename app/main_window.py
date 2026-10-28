@@ -725,7 +725,7 @@ class MainWindow(QWidget):
         elif state == "TRANSCRIBING":
             self._set_status(t("mainwindow.status.transcribing"), theme.STATE_PROCESSING)
         elif state == "LLM_REWRITING":
-            self._set_status(t("mainwindow.status.processing"), theme.STATE_PROCESSING)
+            self._set_status(t("mainwindow.status.processing"), theme.STATE_REWRITING)
         else:
             self._set_status(t("mainwindow.status.ready"), theme.STATE_IDLE)
         self._timer_label.setVisible(not busy and not error)

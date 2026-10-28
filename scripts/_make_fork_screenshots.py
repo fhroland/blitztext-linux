@@ -44,7 +44,8 @@ def main() -> None:
     theme.apply_theme(app)
     previous_language = get_language()
     colors = {"idle": theme.STATE_IDLE, "recording": theme.STATE_RECORDING,
-              "processing": theme.STATE_PROCESSING, "error": theme.STATE_ERROR}
+              "processing": theme.STATE_PROCESSING, "rewriting": theme.STATE_REWRITING,
+              "error": theme.STATE_ERROR}
     for state, color in colors.items():
         icon = BlitztextApp._create_microphone_icon(None, QColor(color))
         if not icon.pixmap(128, 128).save(str(out / f"tray-{state}.png")):
@@ -57,10 +58,15 @@ def main() -> None:
             box.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
             box.start("KEY_RIGHTCTRL", "toggle")
             for state, seconds in (("RECORDING", 7), ("TRANSCRIBING", 9),
-                                   ("LLM_REWRITING", 12)):
-                color = colors["recording" if state == "RECORDING" else "processing"]
+                                   ("LLM_REWRITING", 12), ("ERROR", 12)):
+                color = colors[{"RECORDING": "recording", "TRANSCRIBING": "processing",
+                                "LLM_REWRITING": "rewriting", "ERROR": "error"}[state]]
                 icon = BlitztextApp._create_microphone_icon(None, QColor(color))
-                box.set_status(state, icon)
+                if state == "ERROR":
+                    box.show_error(icon)
+                    box._error_timer.stop()
+                else:
+                    box.set_status(state, icon)
                 with patch("app.recording_overlay.time.monotonic", return_value=100.0 + seconds):
                     box._started = 100.0
                     box._tick()

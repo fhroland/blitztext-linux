@@ -502,6 +502,8 @@ def gui_app(tmp_path):
         yield app
     finally:
         app.stop_hotkey_worker()
+        if app._recording_overlay is not None:
+            app._recording_overlay.stop()
         for window in (
             app._compose_window,
             app._main_window,
@@ -893,7 +895,7 @@ class TestMainWindowControl:
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         QTest.qWait(20)
 
-    def test_overlay_and_tray_use_red_recording_and_orange_processing(self, gui_app):
+    def test_overlay_and_tray_use_red_orange_and_yellow(self, gui_app):
         from collections import Counter
 
         for state in ("RECORDING", "TRANSCRIBING", "LLM_REWRITING"):
@@ -908,10 +910,45 @@ class TestMainWindowControl:
             (red, green, blue), _ = Counter(opaque).most_common(1)[0]
             if state == "RECORDING":
                 assert red > green * 1.5 and red > blue * 1.5
-            else:
+            elif state == "TRANSCRIBING":
                 assert red > green > blue and green > 120 and red - green > 40
+            else:
+                assert red > 200 and green > 200 and blue < 120 and abs(red - green) < 40
         gui_app._set_state("IDLE", "test finished")
         assert not gui_app._recording_overlay.isVisible()
+
+    @pytest.mark.parametrize("restart", [False, True])
+    def test_failed_ai_workflow_shows_gray_then_hides_without_stopping_next_recording(self, gui_app, restart):
+        from PyQt6.QtTest import QTest
+
+        gui_app._set_state("RECORDING", "test")
+        gui_app._set_state("LLM_REWRITING", "test")
+        gui_app._on_worker_error("Synthetic AI failure")
+        overlay = gui_app._recording_overlay
+        assert gui_app.state == "IDLE"
+        assert overlay.isVisible()
+        assert overlay._state == "ERROR"
+        assert not overlay._timer.isActive()
+        assert overlay._error_timer.isActive()
+        assert overlay._error_timer.interval() == 4000
+        image = overlay.icon.pixmap().toImage()
+        assert image == gui_app.tray_icon.icon().pixmap(24, 24).toImage()
+        for x in range(image.width()):
+            for y in range(image.height()):
+                color = image.pixelColor(x, y)
+                if color.alpha() > 240:
+                    assert color.red() == color.green() == color.blue()
+        overlay._error_timer.start(1)
+        if restart:
+            gui_app._tray_error_message = None
+            gui_app._set_state("RECORDING", "new dictation")
+            assert overlay._timer.isActive()
+            assert not overlay._error_timer.isActive()
+        QTest.qWait(30)
+        assert overlay.isVisible() is restart
+        if not restart:
+            assert gui_app._tray_error_message is not None
+            assert gui_app.tray_icon.icon().pixmap(24, 24).toImage() == image
 
     def test_dictation_mode_syncs_window_and_tray(self, gui_app):
         win = gui_app._ensure_main_window()

@@ -887,7 +887,7 @@ class BlitztextApp(QObject):
             "IDLE": self._create_microphone_icon(QColor(theme.STATE_IDLE)),
             "RECORDING": self._create_microphone_icon(QColor(theme.STATE_RECORDING)),
             "TRANSCRIBING": self._create_microphone_icon(QColor(theme.STATE_PROCESSING)),
-            "LLM_REWRITING": self._create_microphone_icon(QColor(theme.STATE_PROCESSING)),
+            "LLM_REWRITING": self._create_microphone_icon(QColor(theme.STATE_REWRITING)),
             "ERROR": self._create_microphone_icon(QColor(theme.STATE_ERROR)),
         }
 
@@ -1745,11 +1745,14 @@ class BlitztextApp(QObject):
             if overlay is None:
                 overlay = RecordingOverlay(self.audio_recorder)
                 self._recording_overlay = overlay
-            if self.state == "RECORDING" and not overlay.isVisible():
+            if self.state == "RECORDING":
                 overlay.start(self.config.transcription_hotkey, self.config.hotkey_mode)
             overlay.set_status(self.state, self.tray_icon.icon())
         elif overlay is not None:
-            overlay.stop()
+            if self.state == "IDLE" and self._tray_error_message and overlay.isVisible():
+                overlay.show_error(self.tray_icon.icon())
+            else:
+                overlay.stop()
         if self._main_window is not None:
             self._main_window.update_state(self.state, self.current_workflow, self._tray_error_message)
 

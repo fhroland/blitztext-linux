@@ -19,7 +19,8 @@ from app import theme
 STATES = [
     ("idle", theme.STATE_IDLE, "Bereit"),
     ("recording", theme.STATE_RECORDING, "Aufnahme"),
-    ("processing", theme.STATE_PROCESSING, "Verarbeitung"),
+    ("processing", theme.STATE_PROCESSING, "Transkription"),
+    ("rewriting", theme.STATE_REWRITING, "KI-Nachbearbeitung"),
     ("error", theme.STATE_ERROR, "Fehler"),
 ]
 

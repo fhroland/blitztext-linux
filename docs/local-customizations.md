@@ -52,11 +52,16 @@ KDE/Wayland.
 - GitHub-Fork erstellt, Original als `upstream` behalten und den eigenen Stand
   mit `local-2026-10-28` markiert. Manuell startbare GitHub-CI ergänzt.
 - README in Englisch und Deutsch auf den Fork ausgerichtet; aktuelle Screenshots
-  der Statusbox in drei Zuständen, Tray-Menüs und Symbolfarben ergänzt.
-- Statusfarben nach Nutzerprüfung deutlicher getrennt: Aufnahme Rot
-  (`#f05c5c`), Transkription/KI-Verarbeitung Orange (`#f0ad4e`), Bereit Grün,
-  Fehler Hellrot. Zentrale Theme-Werte gelten identisch für Tray und Statusbox;
-  bisherige ähnliche Goldtöne ersetzt, Dokumentation und Screenshots aktualisiert.
+  der Statusbox in vier Zuständen (Aufnahme, Transkription, KI, Fehler),
+  Tray-Menüs und Symbolfarben ergänzt.
+- Statusfarben nach Nutzerprüfung getrennt: Aufnahme Rot (`#f05c5c`),
+  Transkription Orange (`#f0ad4e`), KI-Nachbearbeitung Gelb (`#f4df55`),
+  Bereit Grün, Fehler Grau (`#969696`). Zentrale Theme-Werte gelten identisch
+  für Tray und Statusbox; bisherige ähnliche Goldtöne ersetzt.
+  Bei Verarbeitungsfehlern bleibt die Box vier Sekunden mit grauem Mikrofon,
+  eingefrorener Laufzeit und Fehlerhinweis sichtbar, dann blendet sie sich aus.
+  Der Tray behält den Fehlerstatus bis zum nächsten Aufnahmestart. Eine neue
+  Aufnahme ist sofort möglich und cancelt den Ausblend-Timer.
 
 ### Validierung des ersten Stands
 

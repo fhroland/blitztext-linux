@@ -42,7 +42,8 @@ STATE_IDLE = "#86c99a"
 # each other. The tray and recording overlay share these same values.
 STATE_RECORDING = "#f05c5c"
 STATE_PROCESSING = "#f0ad4e"
-STATE_ERROR = "#e88787"
+STATE_REWRITING = "#f4df55"
+STATE_ERROR = "#969696"
 STATE_WARNING = "#e7bd70"
 
 # Record button: round microphone plus room for the recording waves beside it.

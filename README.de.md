@@ -68,13 +68,16 @@ den **Systemtray unsichtbar macht**.
 
 - Während der Aufnahme: echter Mikrofonpegel, Laufzeit und Stopphinweis.
 - Danach ersetzt **Transkribiere…** beziehungsweise **Verarbeite mit KI…** die
-  Pegelanzeige. Die Box bleibt bis zum Abschluss, Fehler oder Verwerfen sichtbar;
-  die gesamte Laufzeit zählt weiter.
+  Pegelanzeige. Die gesamte Laufzeit zählt bis zum Abschluss weiter. Bei einem
+  Fehler bleibt die Box vier Sekunden grau mit Fehlerhinweis sichtbar; das
+  Tray-Symbol bleibt bis zur nächsten Aufnahme grau.
 - Das Mikrofon übernimmt **dasselbe Symbol und dieselben Statusfarben wie der
-  Tray**: **Rot für Aufnahme**, **Orange für Transkription / KI-Verarbeitung**.
-  Grün steht für bereit, Hellrot für einen Fehler. Die Statusfarben sind von den
-  goldenen Bedienelementen getrennt.
+  Tray**: **Rot = Aufnahme**, **Orange = Transkription**, **Gelb = KI-Nachbearbeitung**,
+  **Grau = Fehler**, **Grün = bereit**. Die Statusfarben sind von den goldenen
+  Bedienelementen getrennt.
 - Blitztext startet nur im Systemtray; das Hauptfenster wird bei Bedarf geöffnet.
+
+<p><img src="docs/screenshots/linux/overlay-error-de.png" alt="Graues Mikrofon mit Fehlerhinweis nach einem fehlgeschlagenen Vorgang" width="250"><br>Fehleranzeige: vier Sekunden sichtbar; Details stehen in der Fehlermeldung.</p>
 
 Die Bilder sind Aufnahmen der tatsächlichen Qt-Oberfläche mit demonstriertem
 Pegel und Zeitwert, ohne Mikrofonzugriff oder private Texte. Sie lassen sich mit
@@ -224,45 +227,21 @@ Das **Compose-Fenster** (`✍ Text bearbeiten…` im Tray-Menü oder über das S
 
 ### Tray-Symbol und Kontextmenü
 
-Das Mikrofon im System-Tray ist dein Indikator für den aktuellen Zustand:
+Tray und zentrale Statusbox verwenden dieselben Zustandsfarben:
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-idle.png" width="60"><br><br>
-        <b>Grün</b> (IDLE)<br>
-        <i>Bereit — wartet auf deinen Einsatz.</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-recording.png" width="60"><br><br>
-        <b>Rot</b> (RECORDING)<br>
-        <i>Aufnahme läuft aktiv.</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-processing.png" width="60"><br><br>
-        <b>Orange</b> (TRANSCRIBING / LLM_REWRITING)<br>
-        <i>Magie läuft (Transkription / KI-Umformulierung).</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-error.png" width="60"><br><br>
-        <b>Hellrot</b> (ERROR)<br>
-        <i>Ups, etwas ist schiefgelaufen.</i>
-      </td>
-    </tr>
-  </table>
-</div>
+<table>
+  <tr>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-idle.png" alt="Bereit" width="60"><br><b>Grün</b><br>Bereit</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-recording.png" alt="Aufnahme" width="60"><br><b>Rot</b><br>Aufnahme</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-processing.png" alt="Transkription" width="60"><br><b>Orange</b><br>Transkription</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-rewriting.png" alt="KI-Nachbearbeitung" width="60"><br><b>Gelb</b><br>KI-Nachbearbeitung</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-error.png" alt="Fehler" width="60"><br><b>Grau</b><br>Fehler</td>
+  </tr>
+</table>
 
-Das Tray-Kontextmenü gibt dir schnellen Zugriff auf alle Workflows, das Compose-Fenster, Text-Aktionen, Diktat-Modus, Verlauf und Einstellungen:
+Das Kontextmenü öffnet Workflows, Texteditor, Text-Aktionen, Diktatsammlung, Verlauf und Einstellungen.
 
-<div align="center">
-  <br>
-  <img src="docs/screenshots/linux/tray-menu-de.png" alt="Tray-Kontextmenü" width="300">
-  <br><br>
-</div>
-
-> [!NOTE]
-> Die Statusbox hält Aufnahme und Verarbeitung auch bei ausgeblendeter Leiste oder verborgenem Tray sichtbar. Der Symbol-Fallback greift nur bei einem nicht ladbaren Symbol; er ersetzt keinen fehlenden Tray-Bereich.
+<img src="docs/screenshots/linux/tray-menu-de.png" alt="Aktuelles Tray-Menü mit D/V/S/E-Shortcuts" width="300">
 
 ### Hauptfenster: Single-Panel-Widget
 

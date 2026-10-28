@@ -83,8 +83,15 @@ class RecordingOverlay(QWidget):
         self._timer = QTimer(self)
         self._timer.setInterval(80)
         self._timer.timeout.connect(self._tick)
+        self._error_timer = QTimer(self)
+        self._error_timer.setSingleShot(True)
+        self._error_timer.setInterval(4000)
+        self._error_timer.timeout.connect(self.stop)
 
     def start(self, key: str, mode: str) -> None:
+        if self._state == "RECORDING" and self.isVisible():
+            return
+        self._error_timer.stop()
         self._started = time.monotonic()
         self._state = "RECORDING"
         self.title.setText(t("overlay.recording"))
@@ -99,11 +106,13 @@ class RecordingOverlay(QWidget):
 
     def set_status(self, state: str, icon) -> None:
         """Keep the recording indicator open until the whole workflow finishes."""
+        self._error_timer.stop()
         self._state = state
         self.set_tray_icon(icon)
         if state in ("TRANSCRIBING", "LLM_REWRITING"):
             self.title.setText(t("overlay.processing"))
-            self.title.setStyleSheet(f"color: {theme.STATE_PROCESSING};")
+            color = theme.STATE_REWRITING if state == "LLM_REWRITING" else theme.STATE_PROCESSING
+            self.title.setStyleSheet(f"color: {color};")
             self.level.hide()
             self.processing.setText(t("mainwindow.status.transcribing" if state == "TRANSCRIBING"
                                       else "mainwindow.status.processing"))
@@ -113,6 +122,21 @@ class RecordingOverlay(QWidget):
                 self._started = time.monotonic()
                 self.elapsed.setText("00:00")
                 self._show_indicator()
+
+    def show_error(self, icon) -> None:
+        """Keep the failed workflow visible briefly; the tray retains the error."""
+        self.set_tray_icon(icon)
+        if self._state == "ERROR":
+            return
+        self._state = "ERROR"
+        self._timer.stop()
+        self.title.setText(t("overlay.error"))
+        self.title.setStyleSheet(f"color: {theme.STATE_ERROR};")
+        self.level.hide()
+        self.processing.setText(t("overlay.failed"))
+        self.processing.show()
+        self.hint.setText(t("overlay.error_hint"))
+        self._error_timer.start()
 
     def set_tray_icon(self, icon) -> None:
         self.icon.setPixmap(icon.pixmap(24, 24))
@@ -145,6 +169,7 @@ class RecordingOverlay(QWidget):
         QTimer.singleShot(1500, self._positioner.kill)
 
     def stop(self) -> None:
+        self._error_timer.stop()
         self._state = "IDLE"
         self._timer.stop()
         self.hide()

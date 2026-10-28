@@ -65,11 +65,14 @@ full-screen application, or the desktop layout keeps the **system tray out of vi
 - During recording: the actual microphone level, elapsed time, and stop hint.
 - After recording: the level is replaced by **Transcribing…** or
   **Processing with AI…**. The box stays open and the total elapsed time continues
-  until the workflow finishes, fails, or is discarded.
-- The microphone uses the **same icon and status colours as the tray**: **red for
-  recording** and **orange for transcription / AI processing**. Green means ready;
-  pale red means an error. The normal colour scheme is separate from gold UI accents.
+  until the workflow finishes or is discarded. On failure, a grey error indicator
+  remains for four seconds; the tray stays grey until the next recording.
+- The microphone uses the **same icon and status colours as the tray**:
+  **red = recording**, **orange = transcribing**, **yellow = AI rewriting**,
+  **grey = error**, **green = ready**. These colours are separate from gold UI accents.
 - Blitztext starts in the tray; the main window opens only on request.
+
+<p><img src="docs/screenshots/linux/overlay-error-en.png" alt="Grey microphone and error message after a failed workflow" width="250"><br>Failure: visible for four seconds; details appear in the error notification.</p>
 
 These are captures of the actual Qt widgets with a synthetic demonstration level
 and timer, without microphone access or private text. They can be reproduced with
@@ -216,45 +219,21 @@ The **Compose window** (`✍ Edit text…` in the tray menu or the pen button in
 
 ### Tray icon and context menu
 
-The microphone in the system tray is your indicator of the current state:
+The same status colours are used in the tray and the centre-screen indicator:
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-idle.png" width="60"><br><br>
-        <b>Green</b> (IDLE)<br>
-        <i>Ready — waiting for your action.</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-recording.png" width="60"><br><br>
-        <b>Red</b> (RECORDING)<br>
-        <i>Recording is actively running.</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-processing.png" width="60"><br><br>
-        <b>Orange</b> (TRANSCRIBING / LLM_REWRITING)<br>
-        <i>Magic in progress (transcription / AI rephrasing).</i>
-      </td>
-      <td align="center" width="25%">
-        <img src="docs/screenshots/linux/tray-error.png" width="60"><br><br>
-        <b>Pale red</b> (ERROR)<br>
-        <i>Oops, something went wrong.</i>
-      </td>
-    </tr>
-  </table>
-</div>
+<table>
+  <tr>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-idle.png" alt="Ready" width="60"><br><b>Green</b><br>Ready</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-recording.png" alt="Recording" width="60"><br><b>Red</b><br>Recording</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-processing.png" alt="Transcribing" width="60"><br><b>Orange</b><br>Transcribing</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-rewriting.png" alt="AI rewriting" width="60"><br><b>Yellow</b><br>AI rewriting</td>
+    <td align="center" width="20%"><img src="docs/screenshots/linux/tray-error.png" alt="Error" width="60"><br><b>Grey</b><br>Error</td>
+  </tr>
+</table>
 
-The tray context menu gives you quick access to all workflows, the compose window, text actions, dictation mode, history, and settings:
+The context menu opens the workflows, text editor, text actions, dictation collection, history and settings.
 
-<div align="center">
-  <br>
-  <img src="docs/screenshots/linux/tray-menu-en.png" alt="Tray context menu" width="300">
-  <br><br>
-</div>
-
-> [!NOTE]
-> The status box keeps recording and processing visible even when the panel or tray is hidden. Icon fallback is used if the generated icon cannot be loaded, not as a replacement for a missing tray area.
+<img src="docs/screenshots/linux/tray-menu-en.png" alt="Current tray menu with D/V/S/E shortcuts" width="300">
 
 ### Main window: Single-panel widget
 

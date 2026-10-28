@@ -158,7 +158,7 @@ def test_processing_keeps_time_and_uses_actual_tray_icons(qapp):
         for state, color, message, now in (
             ("RECORDING", theme.STATE_RECORDING, None, 103),
             ("TRANSCRIBING", theme.STATE_PROCESSING, "mainwindow.status.transcribing", 106),
-            ("LLM_REWRITING", theme.STATE_PROCESSING, "mainwindow.status.processing", 112),
+            ("LLM_REWRITING", theme.STATE_REWRITING, "mainwindow.status.processing", 112),
         ):
             icon = BlitztextApp._create_microphone_icon(None, QColor(color))
             recorder.current_level.reset_mock()
