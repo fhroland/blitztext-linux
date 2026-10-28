@@ -8,6 +8,76 @@ Quellcode-Fork, keine offizielle Veröffentlichung und keine separat vertriebene
 App. Für eine eigene App-Veröffentlichung sind die Vorgaben in
 [TRADEMARKS.md](../TRADEMARKS.md) zu beachten.
 
+Diese Datei ist das zentrale Änderungsprotokoll des Forks. Sie dokumentiert
+auch Einrichtung außerhalb des Repositorys: Ein neuer Klon allein reproduziert
+noch nicht die vollständige lokale Installation.
+
+## Getestete Plattform
+
+Am 28.10.2026 im echten Einsatz bestätigt: openSUSE Tumbleweed, KDE Plasma mit
+Wayland, Python 3.13.16, NVIDIA GeForce GTX 1650 Ti (4 GB VRAM), faster-whisper
+1.2.1 mit large-v3-turbo auf CUDA. KI-Nachbearbeitung läuft über einen
+OpenAI-kompatiblen Endpunkt auf einem ASUS Ascent GX10 über Tailscale.
+Auto-Paste wurde in Kate und Konsole getestet, Hotkeys und Statusbox einschließlich
+Vordergrundverhalten und erhaltenem Tastaturfokus auf dem KDE-Desktop geprüft.
+
+Das ursprüngliche `scripts/install.sh` unterstützt weiterhin nur Ubuntu/Debian;
+es wurde nicht zu einem openSUSE-Installer umgebaut. Die Anpassungen für
+Tumbleweed bestehen aus den unten genannten Codeänderungen und gesonderter
+lokaler Einrichtung. Nicht jede Änderung ist ausschließlich für openSUSE nötig:
+die PyAV-Korrektur betrifft eine Bibliotheksinkompatibilität, die KWin-Anpassung
+KDE/Wayland.
+
+## Historie
+
+### 2026-10-28 — erster eigener Stand
+
+- GPU-Vorladen und dauerhafter Modellcache; PyAV 18.1.0 für den funktionierenden
+  faster-whisper-WAV-Decoder fixiert.
+- Rechte Strg allein im Toggle-Modus, getrennte Namen für linke/rechte Strg,
+  Workflow-Shortcuts D/V/S/E und passende Menüanzeigen.
+- Auswahl Lokal / Mit KI einschließlich KI-Aktion als `preferred_workflow`
+  gespeichert und beim Neustart wiederhergestellt; die normale Aufnahmetaste
+  folgt dieser Auswahl. Explizite Workflow-Aktionen ändern die Vorgabe nicht.
+- Start nur im Tray; eigenständige Statusbox auf 250 × 108 Pixel verkleinert,
+  mit echtem Pegel, Gesamtzeit und tatsächlichem Tray-Symbol samt Statusfarben.
+  Bleibt bei Transkription und KI-Nachbearbeitung offen und zeigt den Arbeitsschritt.
+  Besonders nützlich bei ausgeblendeter Statusleiste oder unsichtbarem Systemtray.
+- KDE-Fenstererkennung und Terminal-Einfügen korrigiert; Desktop-Regel und
+  ydotool-Startverhalten lokal ergänzt.
+- GX10-Anbindung mit eng begrenzter HTTP-Ausnahme und Erreichbarkeitsprüfung.
+- In-App-Updates vorübergehend vollständig gesperrt, einschließlich manueller
+  Prüfungen/Downloads und Release-Umschaltung. Kein automatisches Ablaufdatum;
+  Upgrades nur bewusst nach Prüfung übernehmen.
+- GitHub-Fork erstellt, Original als `upstream` behalten und den eigenen Stand
+  mit `local-2026-10-28` markiert. Manuell startbare GitHub-CI ergänzt.
+- README in Englisch und Deutsch auf den Fork ausgerichtet; aktuelle Screenshots
+  der Statusbox in drei Zuständen, Tray-Menüs und Symbolfarben ergänzt.
+
+### Validierung des ersten Stands
+
+- Lokal unter openSUSE: 1064 Tests bestanden, 2 übersprungen; die nur für
+  Ubuntu/Debian vorgesehenen Installer-Tests waren ausgenommen.
+- [GitHub-CI des ersten Fork-Stands](https://github.com/fhroland/blitztext-linux/actions/runs/40767982415):
+  gesamter Lauf einschließlich Installer-Tests auf Ubuntu mit Python 3.11,
+  3.12 und 3.14 sowie Secret-Hygiene-Scan erfolgreich.
+- Quellcode-ZIP vor dem Fork zusätzlich lokal gesichert. Zugangsschlüssel und
+  private Benutzerkonfiguration bleiben außerhalb des Repositorys.
+
+### Screenshots reproduzieren
+
+```sh
+env -u OPENAI_API_KEY PYTHONPATH=. QT_QPA_PLATFORM=offscreen \
+  .venv/bin/python scripts/_make_fork_screenshots.py
+```
+
+Das Skript fotografiert die tatsächlichen Qt-Widgets in Deutsch und Englisch.
+Pegel und Zeitwerte sind für die Dokumentation simuliert. Es verwendet eine
+isolierte Konfiguration und greift weder auf Mikrofon, echte Hotkeys, KI-Dienste
+noch andere Desktop-Fenster zu. Die Aufnahmen liegen unter
+`docs/screenshots/linux/overlay-*.png`; die Tray-Menüs und vier Statussymbole
+werden ebenfalls aus dem aktuellen Code erzeugt.
+
 ## Git-Struktur
 
 - `origin`: `https://github.com/fhroland/blitztext-linux.git`

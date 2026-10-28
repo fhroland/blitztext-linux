@@ -13,13 +13,14 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication
+from app import theme
 
 # Status → (Farbe, Label) — exakt wie in blitztext_linux.py
 STATES = [
-    ("idle", "#2e7d32", "Bereit"),
-    ("recording", "#c62828", "Aufnahme"),
-    ("processing", "#ef6c00", "Verarbeitung"),
-    ("error", "#757575", "Fehler"),
+    ("idle", theme.STATE_IDLE, "Bereit"),
+    ("recording", theme.STATE_RECORDING, "Aufnahme"),
+    ("processing", theme.STATE_PROCESSING, "Verarbeitung"),
+    ("error", theme.STATE_ERROR, "Fehler"),
 ]
 
 SCALE = 2  # 64 → 128 px fuer schaerfere Darstellung

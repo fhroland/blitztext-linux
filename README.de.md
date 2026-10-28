@@ -1,45 +1,105 @@
-> **Persönlicher Anpassungs-Fork:** Dieses Repository sichert eine lokal angepasste
-> Installation von [TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux).
-> Es ist kein offizielles Release und keine separat vertriebene App. In-App-Updates
-> sind gesperrt. Vor Installation oder Upgrade bitte die
-> [lokalen Änderungen und den Upgrade-Ablauf](docs/local-customizations.md) lesen.
-> Die ursprüngliche Dokumentation darunter beschreibt Vorgaben, die von unserer
-> eingerichteten Installation abweichen können.
+# Blitztext Linux — persönlicher Fork
 
-<div align="center">
-  <img src="docs/screenshots/linux/Banner-de.png" alt="Blitztext Linux Banner" width="860">
+[![CI](https://github.com/fhroland/blitztext-linux/actions/workflows/blitztext-linux-ci.yml/badge.svg)](https://github.com/fhroland/blitztext-linux/actions/workflows/blitztext-linux-ci.yml)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-yellow.svg)](LICENSE)
 
-  <h1>Blitztext Linux</h1>
-  <p><strong>Dein lokaler KI-Sprachassistent für Linux-Desktops unter Wayland</strong></p>
+[English](README.md) | **Deutsch**
 
-  <p>
-    <a href="https://timintech.github.io/blitztextweb/"><img src="https://img.shields.io/badge/🌐_Webseite-blitztextweb-2ea44f?style=for-the-badge" alt="Webseite"></a>
-  </p>
+Dies ist der **[persönliche Fork von fhroland](https://github.com/fhroland/blitztext-linux)**
+von **[TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux)**.
+Basis ist der Original-Commit `73a1e41` (App-Version 0.9.1). Das Linux-Original
+ist seinerseits ein Port von [cmagnussen/blitztext-app](https://github.com/cmagnussen/blitztext-app).
+MIT-Lizenz und Urheberhinweise bleiben erhalten. Dies ist kein offizielles
+Release des Originals und keine separat vertriebene App.
 
-  <p>
-    <a href="https://github.com/TimInTech/blitztext-linux/actions/workflows/blitztext-linux-ci.yml"><img src="https://github.com/TimInTech/blitztext-linux/actions/workflows/blitztext-linux-ci.yml/badge.svg" alt="Blitztext Linux CI"></a>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/Lizenz-MIT-yellow.svg" alt="Lizenz: MIT"></a>
-    <img src="https://img.shields.io/badge/Plattform-Ubuntu%2FKubuntu%20%2B%20Wayland-blue" alt="Plattform">
-  </p>
-  <p><a href="README.md">🇬🇧 English</a> | <strong>🇩🇪 Deutsch</strong></p>
-  <p><i>Sprache per Hotkey aufnehmen, lokal oder online transkribieren, optional per LLM umschreiben und direkt in die aktive Anwendung einfügen.</i></p>
-  <p><strong>🔗 Webseite: <a href="https://timintech.github.io/blitztextweb/">timintech.github.io/blitztextweb</a></strong></p>
-</div>
+Der Fork ergänzt eine kompakte Aufnahme- und Verarbeitungsanzeige, Start nur im
+Systemtray, gespeicherte Auswahl **Lokal / Mit KI**, neue Shortcuts und Anpassungen,
+die unter **openSUSE Tumbleweed mit KDE Plasma / Wayland** getestet wurden.
+Release-Updates in der App sind **vorübergehend deaktiviert**, damit sie diese
+Anpassungen nicht überschreiben. Upstream-Upgrades werden über Git geprüft und
+übernommen; die Sperre bleibt bis zu einer bewussten Freigabe bestehen.
 
-<div align="center">
-  <img src="docs/screenshots/linux/demo-de.gif" alt="Demo: Hotkey drücken, sprechen, und Blitztext fügt den transkribierten Text direkt in die aktive Anwendung ein" width="720">
-  <br>
-  <sub><kbd>Alt</kbd> gedrückt halten (Standard-Hotkey), sprechen, loslassen — das Transkript landet direkt in der aktiven Anwendung.</sub>
-</div>
+Das vollständige [Änderungsprotokoll samt Upgrade-Ablauf](docs/local-customizations.md)
+unterscheidet Codeänderungen und zusätzliche lokale Einrichtung.
 
-> [!IMPORTANT]
-> **Eigenständiger Linux-Port:** Dieses Repository enthält ausschließlich den Linux-Port von Blitztext – eine eigenständige Python 3/PyQt6-Implementierung, die unter **KDE Plasma mit Wayland** entwickelt und zusätzlich nativ unter **Ubuntu 26.04 GNOME mit Wayland** verifiziert wurde. Für die originale macOS-Version besuche bitte das [offizielle Haupt-Repository](https://github.com/cmagnussen/blitztext-app).
+## Unter openSUSE Tumbleweed getestet
+
+Die lokale Installation wurde manuell eingerichtet und am **28.10.2026** geprüft:
+
+| Komponente | Getestete Einrichtung |
+|---|---|
+| Desktop | openSUSE Tumbleweed, KDE Plasma, Wayland |
+| Python | 3.13.16 in der virtuellen Projektumgebung |
+| Spracherkennung | faster-whisper 1.2.1, large-v3-turbo, NVIDIA CUDA |
+| GPU | NVIDIA GeForce GTX 1650 Ti, 4 GB VRAM |
+| KI-Nachbearbeitung | OpenAI-kompatibler Endpunkt auf einem ASUS Ascent GX10 über Tailscale |
+| Eingabe und Einfügen | evdev-Hotkeys; ydotool; in Kate und Konsole getestet |
+
+Dafür wurden CUDA-Bibliothekspfade im lokalen Launcher eingerichtet, das Modell
+vorgeladen und dauerhaft im Cache gehalten sowie **PyAV 18.1.0** über
+`constraints-local.txt` fixiert. Hinzu kommen KDE-Fenstererkennung mit **kdotool**,
+eine Startkorrektur des ydotool-Dienstes und eine KWin-Regel, die den Fokuswechsel
+zur Statusbox verhindert. Launcher, Benutzereinstellungen und Desktop-Regeln
+werden durch Klonen nicht automatisch eingerichtet. Details stehen unter
+[zusätzliche lokale Einrichtung](docs/local-customizations.md#außerhalb-des-repositorys).
+
+**Das übernommene Installationsskript ist weiterhin für Ubuntu/Debian ausgelegt
+und lehnt openSUSE ab.** Die erfolgreiche Tumbleweed-Einrichtung bedeutet noch
+keinen fertigen openSUSE-Installer. Die GitHub-CI prüft zusätzlich die gesamte
+Testsuite unter Ubuntu mit Python 3.11, 3.12 und 3.14; das ersetzt keinen echten
+Desktop-Test.
+
+## Aufnahme- und Verarbeitungsbox
+
+Die kompakte **250 × 108 Pixel** große Box erscheint in der Bildschirmmitte über
+anderen Fenstern, ohne den Tastaturfokus zu übernehmen. Sie funktioniert auch bei
+geschlossenem oder minimiertem Hauptfenster. Besonders praktisch ist sie, wenn
+eine ausgeblendete Statusleiste, eine Vollbildanwendung oder das Desktop-Layout
+den **Systemtray unsichtbar macht**.
+
+<table>
+  <tr><th>Aufnahme</th><th>Transkription</th><th>KI-Nachbearbeitung</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/linux/overlay-recording-de.png" alt="Aufnahmebox mit Mikrofon, Laufzeit, Pegel und Stopphinweis" width="250"></td>
+    <td><img src="docs/screenshots/linux/overlay-transcribing-de.png" alt="Statusbox während der Transkription" width="250"></td>
+    <td><img src="docs/screenshots/linux/overlay-llm_rewriting-de.png" alt="Statusbox während der KI-Nachbearbeitung" width="250"></td>
+  </tr>
+</table>
+
+- Während der Aufnahme: echter Mikrofonpegel, Laufzeit und Stopphinweis.
+- Danach ersetzt **Transkribiere…** beziehungsweise **Verarbeite mit KI…** die
+  Pegelanzeige. Die Box bleibt bis zum Abschluss, Fehler oder Verwerfen sichtbar;
+  die gesamte Laufzeit zählt weiter.
+- Das Mikrofon übernimmt **dasselbe Symbol und dieselben Statusfarben wie der
+  Tray**: Gold für Aufnahme und Hellgold für Verarbeitung. Grün steht für bereit,
+  Rot für einen Fehler.
+- Blitztext startet nur im Systemtray; das Hauptfenster wird bei Bedarf geöffnet.
+
+Die Bilder sind Aufnahmen der tatsächlichen Qt-Oberfläche mit demonstriertem
+Pegel und Zeitwert, ohne Mikrofonzugriff oder private Texte. Sie lassen sich mit
+[`scripts/_make_fork_screenshots.py`](scripts/_make_fork_screenshots.py) neu erzeugen.
 
 ---
 
+## Weitere Änderungen gegenüber dem Original
+
+- **Gespeicherter Modus:** Lokal / Mit KI und die KI-Aktion bleiben nach einem
+  Neustart erhalten. Die normale Aufnahmetaste berücksichtigt diese Auswahl.
+- **Start nur im Tray:** Das Hauptfenster muss zum Diktieren nicht geöffnet sein.
+- **Rechte Strg allein:** Kombinationen mit dieser Taste starten oder stoppen
+  keine Aufnahme.
+- **Kontrollierte Upgrades:** In-App-Updates bleiben bis zu einer ausdrücklichen
+  Freigabe gesperrt. Neue Originalstände werden über Git geprüft und getestet.
+- **KDE- und GPU-Anbindung:** Terminal-Erkennung beim Einfügen, Modell-Vorladen
+  und Cache, Decoder-Versionsbeschränkung sowie die Aufnahme-/Verarbeitungsbox.
+
+Die datierte [Änderungshistorie](docs/local-customizations.md#historie) hält diese
+Anpassungen und ihre Prüfung fest. Externe Launcher-, Dienst- und KWin-Einstellungen
+sind getrennt dokumentiert, damit sie auf einem anderen Rechner nachvollziehbar sind.
+
 ## Zweck
 
-Blitztext Linux ist ein Hotkey-gesteuerter Sprachassistent, der gesprochene Sprache in Text umwandelt und direkt in die gerade aktive Anwendung einfügt. Die Transkription läuft standardmäßig lokal über Whisper; ein LLM-Schritt ist optional und wird nur genutzt, wenn du bewusst einen der KI-Workflows (Umformulierung, Ton-Filter, Emoji-Anreicherung) oder das Compose-Fenster auswählst. Alles bleibt auf deinem Rechner, solange du nicht bewusst einen Cloud-Anbieter (OpenAI, OpenRouter oder einen eigenen OpenAI-kompatiblen Endpunkt) für LLM- oder Cloud-TTS-Funktionen aktivierst.
+Blitztext Linux ist ein Hotkey-gesteuerter Sprachassistent, der gesprochene Sprache in Text umwandelt und direkt in die gerade aktive Anwendung einfügt. Die Transkription läuft standardmäßig lokal über Whisper; ein LLM-Schritt ist optional und wird nur genutzt, wenn du bewusst einen der KI-Workflows (Umformulierung, Ton-Filter, Emoji-Anreicherung) oder das Compose-Fenster auswählst. In der getesteten Einrichtung bleibt das Audio zur Erkennung auf dem Notebook; für die KI-Nachbearbeitung geht nur der erkannte Text an den GX10. Andere Konfigurationen können OpenAI, OpenRouter oder eigene Endpunkte verwenden. Cloud-Transkription überträgt Audio an den Anbieter, Cloud-TTS den vorzulesenden Text.
 
 ---
 
@@ -56,20 +116,31 @@ Blitztext Linux ist ein Hotkey-gesteuerter Sprachassistent, der gesprochene Spra
 - **LLM-gestützte Workflows:** Lass die KI deine Sätze professionell umformulieren, emotional filtern oder mit passenden Emojis anreichern.
 - **Lokale Verarbeitung:** Optional 100% offline für volle Privatsphäre.
 
-### Die 5 Workflows und Hotkeys
+### Workflows und aktuelle Shortcuts
 
-Blitztext registriert globale Hotkeys via `evdev`. Mit diesen Kombinationen hast du die volle Kontrolle:
+Die globalen Hotkeys werden direkt über `evdev` gelesen; sie sind nicht in der
+KDE-Shortcutverwaltung registriert. Meta ist normalerweise die Windows-/Super-Taste.
 
-| Workflow | Hotkey | LLM? | Beschreibung |
-| :--- | :--- | :---: | :--- |
-| **Diktieren** | <kbd>Alt</kbd> (halten) | ❌ | Standard: Nimmt auf, solange die Taste gehalten wird, transkribiert und fügt den Text ein. Sehr kurze Tastendrücke unter 150 ms werden im Halten-Modus als Fehldruck verworfen. Aufnahmetaste und Halten/Umschalten-Modus sind unter **Einstellungen → Spracherkennung** konfigurierbar. |
-| **Diktieren · lokal** | <kbd>Meta</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> | ❌ | Erzwingt eine reine **Offline-Transkription**. |
-| **Diktieren & verbessern** | <kbd>Meta</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> | ✅ | Transkribiert und schreibt das Ergebnis mit der gewählten Text-Aktion um. |
-| **Sachlich formulieren** | <kbd>Meta</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> | ✅ | Emotionale Entladung: Wandelt Frust in eine sachliche Nachricht um. |
-| **Emojis ergänzen** | <kbd>Meta</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd> | ✅ | Ergänzt deine Nachricht passend mit Emojis. |
+| Aktion | Tastenkürzel | KI-Nachbearbeitung? |
+|---|---|---|
+| Start/Stopp mit gespeicherter Auswahl Lokal / Mit KI | **Rechte Strg allein** (lokal eingerichtet) | Abhängig vom gespeicherten Modus |
+| Lokal diktieren | **Meta+Shift+D** | Nein |
+| Diktieren & verbessern | **Meta+Shift+V** | Ja, mit gewählter Text-Aktion |
+| Sachlich formulieren | **Meta+Shift+S** | Ja |
+| Emojis ergänzen | **Meta+Shift+E** | Ja |
 
-> [!NOTE]
-> **LLM-Workflows** (`Diktieren & verbessern`, `Sachlich formulieren`, `Emojis ergänzen`) setzen einen gültigen **API-Key** voraus. Siehe [Secrets](#secrets) weiter unten für die Konfiguration. Ohne diesen Key sind diese Funktionen im Menü und über die Hotkeys deaktiviert bzw. führen zu einer Fehlermeldung.
+Rechte Strg im **Toggle-Modus** schaltet beim Loslassen: einmal drücken und
+loslassen startet, erneut drücken und loslassen stoppt. Kombinationen wie rechte
+Strg+C/X lösen keine Aufnahme aus. Taste und Modus sind unter **Einstellungen →
+Spracherkennung** konfigurierbar. Eine neue Konfiguration verwendet weiterhin
+**linke Alt / Halten** als Programmvorgabe; rechte Strg / Toggle ist die getestete
+lokale Einstellung und kein neuer fest eingebauter Standard.
+
+Die normale Aufnahmetaste verwendet den gespeicherten `preferred_workflow`.
+Explizite Tray-Workflows starten dagegen die benannte Aktion, ohne die gespeicherte
+Auswahl zu ändern. Der Tray-Eintrag **Diktieren** transkribiert ohne KI-Nachbearbeitung.
+KI-Aktionen benötigen einen nutzbaren konfigurierten Endpunkt/Schlüssel. Die alten
+Kombinationen Meta+Shift+H/T sind nicht mehr aktiv; Meta+Shift+D steht nun für lokal.
 
 ### KI-Workflows
 
@@ -164,17 +235,17 @@ Das Mikrofon im System-Tray ist dein Indikator für den aktuellen Zustand:
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-recording.png" width="60"><br><br>
-        <b>Rot</b> (RECORDING)<br>
+        <b>Gold</b> (RECORDING)<br>
         <i>Aufnahme läuft aktiv.</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-processing.png" width="60"><br><br>
-        <b>Orange</b> (TRANSCRIBING)<br>
+        <b>Pale gold</b> (TRANSCRIBING / LLM_REWRITING)<br>
         <i>Magie läuft (Transkription / KI-Umformulierung).</i>
       </td>
       <td align="center" width="25%">
         <img src="docs/screenshots/linux/tray-error.png" width="60"><br><br>
-        <b>Grau</b> (ERROR)<br>
+        <b>Rot</b> (ERROR)<br>
         <i>Ups, etwas ist schiefgelaufen.</i>
       </td>
     </tr>
@@ -190,7 +261,7 @@ Das Tray-Kontextmenü gibt dir schnellen Zugriff auf alle Workflows, das Compose
 </div>
 
 > [!NOTE]
-> Steht im Desktop-Environment kein Tray-Bereich zur Verfügung, fällt das Icon auf das System-Theme `audio-input-microphone` zurück; die Farbkodierung greift dann ggf. nicht.
+> Die Statusbox hält Aufnahme und Verarbeitung auch bei ausgeblendeter Leiste oder verborgenem Tray sichtbar. Der Symbol-Fallback greift nur bei einem nicht ladbaren Symbol; er ersetzt keinen fehlenden Tray-Bereich.
 
 ### Hauptfenster: Single-Panel-Widget
 
@@ -228,7 +299,7 @@ Das Hauptfenster ist ein kompaktes, rahmenloses Desktop-Widget mit einheitlicher
   - **Bereit (IDLE):** Grüner Statuspunkt und Zeitanzeige (`Bereit: 00:00`).
   - **Aufnahme (RECORDING):** Gelber Statuspunkt, sekundengenaue Zeitanzeige und animierte Wellenbalken links und rechts des Mikrofons.
   - **Verarbeitung (TRANSCRIBING):** Rotierender goldener Kreisbogen um das Mikrofon (`Transkribiere…`).
-- **Umschalter Lokal | Mit KI:** Zwei Knöpfe direkt unter dem Mikrofon. **Lokal** = nur lokale Whisper-Transkription, nichts verlässt den Rechner. **Mit KI** = lokal transkribieren, danach bearbeitet dein Cloud-KI-Anbieter den Text. Die gewählte Seite ist gold; die Zustandszeile darunter (zum Beispiel `Lokal · Whisper base` oder `Mit KI · OpenAI · Verbessern`) zeigt, was die nächste Aufnahme tut, und öffnet per Klick das Detail-Popup. Hotkey-Workflows stellen den Umschalter auf die passende Seite, während der Aufnahme ist er gesperrt.
+- **Umschalter Lokal | Mit KI:** Zwei Knöpfe direkt unter dem Mikrofon. **Lokal** = Transkription ohne KI-Nachbearbeitung; mit einem lokalen Spracherkennungs-Backend bleibt das Audio auf dem Rechner. **Mit KI** ergänzt die Bearbeitung durch den konfigurierten KI-Endpunkt, zum Beispiel den GX10. Die gewählte Seite ist gold; die Zustandszeile darunter (zum Beispiel `Lokal · Whisper base` oder `Mit KI · OpenAI · Verbessern`) zeigt, was die nächste Aufnahme tut, und öffnet per Klick das Detail-Popup. Hotkey-Workflows stellen den Umschalter auf die passende Seite, während der Aufnahme ist er gesperrt.
 - **Kompakte Werkzeugleiste:**
   - ✍ **Compose-Button** (hervorgehobenes Stift-Symbol): Öffnet das Entwurfsfenster für Texteingabe und KI-Verfeinerung.
   - 🕒 **Verlauf-Button** (mit Zähler-Badge): Öffnet den Transkript- und Diktat-Verlauf.
@@ -236,7 +307,7 @@ Das Hauptfenster ist ein kompaktes, rahmenloses Desktop-Widget mit einheitlicher
   - ⋯ **Mehr-Button** (gleiches Popup wie die Zustandszeile): Zeigt nur die Felder, die zur gewählten Seite passen — *Lokal*: Whisper-Modell; *Mit KI*: Aktion (*Diktieren & verbessern*, *Sachlich formulieren*, *Emojis ergänzen*), Schreibstil für *Diktieren & verbessern* (*Kürzen*, *Ausformulieren*, *Tonfall ändern*, *Eigene Anweisung*), KI-Anbieter (OpenAI oder OpenRouter; einen eigenen Endpunkt änderst du nur in den Einstellungen) und Whisper-Modell. Ein **Fertig**-Knopf schließt das Popup; *Sammel-Diktat* und *Verwerfen* stehen darunter. Der Anbieterwechsel braucht die passende API-Key-Variable, größere Whisper-Modelle fragen vorher, weil sie heruntergeladen werden können.
 - **Einstellungs-Zahnrad:** Kleiner ⚙-Knopf in der Titelleiste neben Minimieren und Schließen; öffnet den Konfigurations-Dialog.
 
-*Das Widget öffnet sich beim Start sowie über den Tray-Eintrag **Fenster anzeigen** oder einen Klick auf das Tray-Icon. Schließen blendet das Widget aus — die App läuft im Hintergrund im Tray weiter.*
+*Das Widget bleibt beim Start geschlossen. Über **Fenster anzeigen** oder einen Klick auf das Tray-Symbol lässt es sich öffnen. Schließen blendet es aus, die App läuft im Tray weiter. Die Auswahl Lokal / Mit KI einschließlich KI-Aktion wird als `preferred_workflow` gespeichert und beim Neustart wiederhergestellt; explizite Workflow-Shortcuts überschreiben diese Vorgabe nicht.*
 
 ### Diktat, Verlauf und Vorlesen
 
@@ -274,136 +345,60 @@ Zusätzlich zu den Workflows bietet das Tool drei Komfort-Funktionen:
 
 ## Installation & Start
 
-### Schnellinstallation (empfohlen)
-
-Der einfachste Weg, um Blitztext auf deinem System bereitzustellen:
+Für unsere Anpassungen **diesen Fork** klonen:
 
 ```bash
-git clone https://github.com/TimInTech/blitztext-linux.git
+git clone https://github.com/fhroland/blitztext-linux.git
 cd blitztext-linux
-bash scripts/install.sh
 ```
 
-**Was macht das Skript?**
-Es ist idempotent (mehrfach ausführbar) und erledigt alles vollautomatisch:
-1. Prüft dein System (Ubuntu/Debian) & Python-Version.
-2. Installiert fehlende Systempakete (inkl. `pipx`).
-3. Fragt den Betriebsmodus ab: globale Hotkeys mit `input`-Gruppe oder nur Fenster/Tray ohne globale Hotkeys.
-4. Richtet eine `.venv` Umgebung ein und installiert `openai-whisper`/`faster-whisper`.
-5. Bereitet `ydotool.service` vor, installiert den systemd-User-Service und
-   aktiviert ihn für den Autostart, ohne ihn sofort zu starten.
+Für **openSUSE Tumbleweed** ist die getestete manuelle Einrichtung in
+[local-customizations.md](docs/local-customizations.md#außerhalb-des-repositorys)
+dokumentiert. Dort stehen Launcher, CUDA-Pfade, Dienste und KWin-Anpassungen.
+Das ist die Dokumentation einer funktionierenden Installation, noch kein
+allgemeiner Ein-Befehl-Installer. Benutzereinstellungen und Schlüssel müssen
+für eine neue Installation separat eingerichtet werden.
 
-### Nach der Installation
+Für **Ubuntu/Debian** steht das übernommene `bash scripts/install.sh` bereit.
+Die ursprünglichen Schritte und Paketlisten stehen in der
+[Installationsanleitung des Originals](https://github.com/TimInTech/blitztext-linux/blob/73a1e41/README.de.md#installation--start).
+Sie beschreibt die Originalvorgaben. Die zusätzlichen Versionsbeschränkungen und
+Desktop-Anpassungen dieses Forks sind bei Bedarf separat zu übernehmen; den
+Debian-Installer nicht unter openSUSE ausführen.
 
-1. **Neustart nur erforderlich, wenn du den Hotkey-Modus gewählt hast** (oder ab-/anmelden), damit die Gruppe `input` aktiv wird. Danach checken:
-   ```bash
-   bash scripts/verify.sh
-   ```
-2. **Manuell testen:**
-   ```bash
-   ./run.sh
-   ```
-   *(Erscheint das Tray-Symbol und reagieren die Hotkeys? Dann lief alles glatt!)*
-3. **Den bereits aktivierten Autostart-Dienst jetzt starten:**
-   ```bash
-   systemctl --user start blitztext-linux
-   ```
-
-> **Stand Ubuntu 26.04 GNOME / Wayland (verifiziert am 10.08.2026):** Eine
-> saubere Installation mit Python 3.14.4 bestand `scripts/verify.sh` vor der
-> ersten Benutzerkonfiguration mit 17 PASS, 0 FAIL, 0 WARN und danach mit
-> 18 PASS, 0 FAIL, 0 WARN. Hauptfenster, GNOME-AppIndicator-Tray, Audioaufnahme,
-> lokale `openai-whisper`-Transkription, globaler Left-Alt-Hotkey,
-> Wayland-Zwischenablage, `ydotool`-Auto-Paste und der Autostart als
-> systemd-User-Service wurden in der echten Desktop-Sitzung ausgeführt. Diese
-> Verifikation gilt für die native Installation, nicht für das experimentelle
-> Flatpak-Manifest.
-
-<details>
-<summary><b>Autostart wieder deaktivieren</b></summary>
+Nach Einrichtung von Abhängigkeiten und Konfiguration über den lokalen Launcher
+oder den Benutzer-Dienst starten. `./run.sh` startet den Checkout direkt, ergänzt
+aber nicht die CUDA-Bibliothekspfade des lokalen Launchers.
 
 ```bash
-systemctl --user stop blitztext-linux
-systemctl --user disable blitztext-linux
-```
-</details>
-
-<details>
-<summary><b>Manuelle Installation (Diagnose / Experten)</b></summary>
-
-Falls du gezielt debuggen möchtest, anstatt `scripts/install.sh` zu nutzen:
-
-**1. Systempakete (apt)**
-```bash
-sudo apt install pulseaudio-utils wl-clipboard xclip ydotool ffmpeg python3-venv python3-evdev build-essential python3-dev socat pipx
+systemctl --user start blitztext-linux.service
 ```
 
-| Paket | Zweck |
-| :--- | :--- |
-| `pulseaudio-utils` | `parec` für die Audioaufnahme via PulseAudio/PipeWire |
-| `wl-clipboard` / `xclip` | Zwischenablage unter Wayland (`wl-copy`) bzw. X11-Fallback |
-| `ydotool` | Simuliert automatisches Einfügen. Blitztext verwendet symbolische Tastenkombinationen, die mit Ubuntu 24.04s ydotool 0.1.8 und ydotool ≥ 1.0 funktionieren: `Ctrl+Shift+V` als terminalkompatibler Wayland-Fallback, sonst `Ctrl+V`. |
-| `ffmpeg` | Audio-Konvertierungen |
-| `python3-evdev` | Eingabegeräte-Zugriff für den systemweiten Hotkey-Daemon |
-| `socat` | Optionale Socket-Kommunikation |
-| `pipx` | Isolierte Installation von Whisper-Engines |
-
-**2. evdev-Rechte vergeben**
-```bash
-sudo usermod -aG input $USER
-```
-
-**3. Virtuelle Umgebung & Python-Pakete**
-Innerhalb der venv zuerst das CPU-only-PyTorch-Wheel installieren, damit nicht versehentlich große CUDA-Wheels heruntergeladen werden:
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --index-url https://download.pytorch.org/whl/cpu torch
-pip install PyQt6 evdev openai pytest openai-whisper faster-whisper
-```
-
-**4. Whisper-Engine als Alternative via pipx**
-Falls du `openai-whisper` losgelöst von der venv installieren möchtest, nutze
-den vorhandenen System-Interpreter. Der verifizierte Ubuntu-26.04-Pfad verwendet
-die Projekt-venv mit Python 3.14.4; pipx ist dort nicht erforderlich:
-```bash
-pipx install --python "$(command -v python3)" openai-whisper
-pipx inject openai-whisper faster-whisper   # optional, für beschleunigte Ausführung
-```
-
-**5. ydotool prüfen**
-```bash
-systemctl --user start ydotool.service
-```
-Liefert `apt` nur ydotool 0.1.x (Ubuntu 24.04/22.04), ydotool ≥ 1.0 aus dem Quellcode bauen:
-```bash
-sudo apt install cmake build-essential scdoc git
-git clone --depth 1 --branch v1.0.4 https://github.com/ReimuNotMoe/ydotool.git
-cd ydotool && cmake -B build -DCMAKE_BUILD_TYPE=Release && make -C build && sudo make -C build install
-systemctl --user enable --now ydotool.service   # nutzt /usr/local/bin/ydotoold
-```
-
-**6. Anwendung starten**
-```bash
-./run.sh
-```
-</details>
-
----
+Die Anwendung startet **nur im Tray**, ohne Hauptfenster. Über **Fenster anzeigen**
+im Tray-Menü lässt es sich bei Bedarf öffnen. Die Statusbox erscheint unabhängig
+davon während Aufnahme und Verarbeitung.
 
 ## Aufnahme verwerfen
 
 Während einer Aufnahme erscheint **Verwerfen** direkt bei der Aufnahmesteuerung und im Tray-Menü. Die Aktion beendet die Aufnahme und löscht das temporäre Audio, ohne Transkription oder KI-Verarbeitung zu starten. **Stopp** beendet und verarbeitet die Aufnahme weiterhin. Vorhandener Text und Verlauf bleiben beim Verwerfen erhalten.
 
-## Updates aus den Einstellungen
+## Updates vorübergehend deaktiviert
 
-Unter **Einstellungen → Updates → Nach Updates suchen** eine neue Version prüfen und mit **Update herunterladen und installieren** einspielen. Öffentliche stabile GitHub-Releases benötigen weder GitHub-Konto noch Token, Git-Installation oder `git pull`. Die Prüfung erfolgt auf Knopfdruck; beim bloßen Öffnen der Einstellungen wird nichts geladen. Nach der Installation Blitztext beenden und erneut öffnen.
+Release-Ersetzung und auch manuelle **In-App-Updateprüfungen, Downloads und
+Installationen** sind in diesem Fork gesperrt. Der ursprüngliche Updater arbeitete
+bereits nur auf Anforderung; unsere zusätzliche Sperre schützt den angepassten
+Code auch vor einem versehentlichen Klick.
 
-Updates werden separat im Datenverzeichnis des Benutzers vorbereitet. Konfiguration, Zugangsdaten und Modell-Caches bleiben an ihren bisherigen Orten. Schlägt Download oder Vorbereitung fehl, bleibt die bisherige Version ausgewählt. Die erste Vorbereitung kann mehrere Minuten dauern und benötigt freien Speicher für eine separate Python-Umgebung. Die Erstinstallation stellt weiterhin die Systempakete bereit; ein App-Update benötigt keine Administratorrechte und führt `install.sh` nicht erneut aus.
+Die Datei `.updates-disabled` oder `BLITZTEXT_DISABLE_UPDATES=1` aktiviert die
+Sperre; der lokale Launcher setzt die Variable zusätzlich. `run.sh` startet unter
+der Sperre weiterhin den Checkout und wechselt nicht zu vorbereiteten
+Release-Verzeichnissen. Die Sperre läuft nicht von selbst ab.
 
-Der Updatekanal setzt eine Version voraus, die den Updater bereits enthält. Ältere Installationen müssen diese einmal über den bisherigen Installationsweg beziehen. Experimentelle Flatpak-Builds verwenden ihren eigenen Paketweg.
-
-Für Release-Ersteller: Ein stabiles Release mit Tag `vX.Y.Z` veröffentlichen, passend zu `app/__init__.py`. Der Release-Workflow baut das versionierte Updatearchiv samt Prüfsumme und hängt es an das Release. Solange diese Dateien fehlen, meldet die App, dass das Release noch nicht installierbar ist. Paketaufbau und Wiederherstellung stehen in der [Update-Dokumentation](docs/release-updates.md).
+Upgrades werden in einem separaten Git-Branch/Arbeitsverzeichnis vorbereitet,
+mit unseren Anpassungen zusammengeführt, getestet und bewusst übernommen.
+Siehe [Upgrade-Ablauf](docs/local-customizations.md#upgrades-kontrolliert-übernehmen).
+Die ursprüngliche [Release-Paketdokumentation](docs/release-updates.md) bleibt als
+Referenz erhalten; sie beschreibt keinen freigeschalteten Updatekanal dieses Forks.
 
 ## Konfiguration
 
@@ -424,7 +419,9 @@ Der Einstellungs-Dialog enthält Spracherkennung, Text & KI, Allgemein und Updat
 > Die Konfigurationsdatei wird automatisch mit restriktiven Dateiberechtigungen (**`0o600` / `chmod 600`**) gespeichert.
 
 <details>
-<summary><b>Beispiel-Konfiguration & Felderklärung</b></summary>
+<summary><b>Beispiel-Konfiguration mit Programmvorgaben & Felderklärung</b></summary>
+
+Das Beispiel zeigt Programmvorgaben. Die getestete lokale Einrichtung verwendet dagegen faster-whisper, large-v3-turbo, rechte Strg / Toggle und einen eigenen KI-Endpunkt. Diese privaten Einstellungen werden nicht mitgeliefert.
 
 ```json
 {
@@ -434,6 +431,7 @@ Der Einstellungs-Dialog enthält Spracherkennung, Text & KI, Allgemein und Updat
   "backend": "openai-whisper",
   "hotkey_mode": "hold",
   "transcription_hotkey": "KEY_LEFTALT",
+  "preferred_workflow": "transcription",
   "openai_api_key_env": "OPENAI_API_KEY",
   "autopaste": true,
   "paste_key_delay_ms": 80,
@@ -463,11 +461,12 @@ Der Einstellungs-Dialog enthält Spracherkennung, Text & KI, Allgemein und Updat
 - **model**: Whisper-Modellgröße (`tiny`, `base`, `small`, `medium`, `large`, `large-v2`, `large-v3`, `large-v3-turbo`). Standard: `base`.
 - **language**: Transkriptions-Sprache (`de`, `en`) oder `auto`.
 - **ui_language**: Sprache der App-Oberfläche (`de` oder `en`). Standard: `de`. Änderungen greifen nach einem Neustart.
-- **backend**: `openai-whisper` oder `faster-whisper` (lokal), oder `openrouter` / `openai-cloud` (Cloud-Transkription mit `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Datenschutz:** Bei einem Cloud-Backend wird die Aufnahme an OpenRouter bzw. OpenAI gesendet; der Schlüssel kommt aus `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (oder den konfigurierten Variablennamen) und wird nie in der Config gespeichert. Der Workflow *Lokal* transkribiert immer lokal mit `faster-whisper`, auch wenn ein Cloud-Backend eingestellt ist.
+- **backend**: `openai-whisper` oder `faster-whisper` (lokal), oder `openrouter` / `openai-cloud` (Cloud-Transkription mit `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Datenschutz:** Bei einem Cloud-Backend wird die Aufnahme an OpenRouter bzw. OpenAI gesendet; der Schlüssel kommt aus `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (oder den konfigurierten Variablennamen) und wird nie in der Config gespeichert. Der explizite Shortcut *Diktieren · lokal* erzwingt bei konfiguriertem Cloud-Backend die lokale Erkennung mit `faster-whisper`. Für die Auswahl *Lokal* im Hauptfenster dieses Stands muss wie in der getesteten Einrichtung ein lokales Spracherkennungs-Backend konfiguriert sein.
 - **hotkey_mode**:
   - `toggle`: Einmal drücken startet, erneutes Drücken beendet.
   - `hold`: Aufnahme läuft solange der Hotkey gedrückt wird. Tastendrücke unter 150 ms werden verworfen; leere Aufnahmen kehren ohne dauerhaften Fehlerzustand zu Bereit zurück.
-- **transcription_hotkey**: Aufnahmetaste, die vom globalen Hotkey-Daemon überwacht wird. Standard: `KEY_LEFTALT`.
+- **transcription_hotkey**: Aufnahmetaste des globalen Hotkey-Daemons. Programmvorgabe: `KEY_LEFTALT`; lokal getestet: `KEY_RIGHTCTRL` mit `hotkey_mode=toggle`.
+- **preferred_workflow**: Gespeicherte Auswahl Lokal / Mit KI, etwa `transcription`, `local`, `text_improver`, `dampf_ablassen` oder `emoji_text`. Vorgabe: `transcription`. Die normale Aufnahmetaste verwendet diese Auswahl.
 - **openai_api_key_env**: Name der Umgebungsvariable für den API-Key. Standard: `OPENAI_API_KEY`. Für OpenRouter: `OPENROUTER_API_KEY`.
 - **tts_openai_api_key_env**: Umgebungsvariable für den Key von OpenAI Cloud-TTS, unabhängig vom LLM-Anbieter. Standard: `OPENAI_API_KEY`.
 - **llm_provider**: `openai` (Standard), `openrouter` oder `custom`.
@@ -512,13 +511,15 @@ API-Keys werden niemals in `config.json` gespeichert — sie werden zur Laufzeit
 
 ## Tests
 
-Führe die Test-Suite lokal aus:
+Gesamte Testsuite auf Ubuntu/Debian ausführen:
 
 ```bash
-pytest
+env -u OPENAI_API_KEY WHISPER_GUI_TESTS=1 QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q
 ```
 
-Mit `WHISPER_GUI_TESTS=1 QT_QPA_PLATFORM=offscreen pytest` laufen zusätzlich die GUI-Tests (Hauptfenster, Compose-Fenster).
+Unter openSUSE `--ignore=tests/test_install_script.py` ergänzen: Diese Installer-Tests
+setzen Ubuntu/Debian voraus. Die gesamte Ubuntu-Suite läuft zusätzlich in der
+[CI dieses Forks](https://github.com/fhroland/blitztext-linux/actions/workflows/blitztext-linux-ci.yml).
 
 `bash scripts/verify.sh` führt sitzungsabhängige Diagnosen für X11-, Wayland- und Clipboard-Backends aus — hilfreich nach der Installation oder bei der Fehlersuche zu Hotkeys/Paste-Verhalten. Die Ausgabe ist Diagnosehilfe, kein Supportversprechen; siehe die dort ausgegebenen Kompatibilitätshinweise für deine Desktop-Sitzung.
 
@@ -568,8 +569,10 @@ Dieses Projekt wurde mit Unterstützung künstlicher Intelligenz (AI-assisted) e
 │   ├── llm_service.py      # OpenAI / OpenRouter / eigene Endpunkte
 │   ├── main_window.py      # Hauptanwendungsfenster
 │   ├── paste_service.py    # Wayland-Clipboard-Integration
+│   ├── recording_overlay.py # Aufnahme-/Verarbeitungsbox mit Pegel und Laufzeit
 │   ├── transcribe.py       # Whisper-Transkription
 │   ├── tts_window.py       # Vorlese-Fenster mit Audio-Export
+│   ├── update_policy.py    # Lokale Updatesperre
 │   ├── workflows.py        # Workflow-Definitionen
 │   └── writing_presets.py  # Text-Aktionen und Migration alter Presets
 ├── packaging/flatpak/      # Experimenteller Flatpak-MVP-Spike (siehe oben)
@@ -595,11 +598,11 @@ Das Original-Projekt ist ein experimentelles, nicht-kommerzielles Open-Source-Pr
   <sub>Erstellt mit ❤️ (und ein bisschen KI-Hilfe).</sub>
 </div>
 
-### Neueste Release-Notizen (v0.9.1): Verwerfen, Updater und Cloud-Transkription
+### Historische Original-Release-Notizen (v0.9.1): Verwerfen, Updater und Cloud-Transkription
 
-Eine laufende Aufnahme lässt sich jetzt mit **Verwerfen** abbrechen (Hauptfenster und Tray-Menü): Das temporäre Audio wird gelöscht, nichts wird transkribiert. Einstellungen → Updates prüft auf neue öffentliche GitHub-Releases und installiert sie ohne Git oder Token. <kbd>Esc</kbd> schließt das Verlaufsfenster und das Diktat-Popup. Die Cloud-Backends `openrouter` und `openai-cloud` stehen in den Einstellungen bereit; siehe Datenschutz-Hinweis bei `backend`.
+Eine laufende Aufnahme lässt sich jetzt mit **Verwerfen** abbrechen (Hauptfenster und Tray-Menü): Das temporäre Audio wird gelöscht, nichts wird transkribiert. Das Original führte In-App-Release-Updates ein; dieser Fork sperrt diesen Updateweg derzeit. <kbd>Esc</kbd> schließt das Verlaufsfenster und das Diktat-Popup. Die Cloud-Backends `openrouter` und `openai-cloud` stehen in den Einstellungen bereit; siehe Datenschutz-Hinweis bei `backend`.
 
-### Release-Notizen (v0.9.0): Schalter Lokal | Mit KI und sicherere Aufnahme
+### Historische Original-Release-Notizen (v0.9.0): Schalter Lokal | Mit KI und sicherere Aufnahme
 
 Das Hauptfenster hat einen sichtbaren Schalter Lokal | Mit KI, schnelle Umschalter für KI-Anbieter und Whisper-Modell sowie ein kleines Einstellungs-Zahnrad. Diktierter Text wird lokal bereinigt (Begriffe zusammenführen, Ersetzungen, Füllwörter, Stottern), bevor er eingefügt oder umgeschrieben wird.
 
