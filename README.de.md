@@ -7,7 +7,8 @@
 
 Dies ist der **[persönliche Fork von fhroland](https://github.com/fhroland/blitztext-linux)**
 von **[TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux)**.
-Basis ist der Original-Commit `73a1e41` (App-Version 0.9.1). Das Linux-Original
+Ursprüngliche Basis ist der Original-Commit `73a1e41` (App-Version 0.9.1).
+Am 28.10.2026 wurden die Originalkorrekturen bis `fae656c` übernommen. Das Linux-Original
 ist seinerseits ein Port von [cmagnussen/blitztext-app](https://github.com/cmagnussen/blitztext-app).
 MIT-Lizenz und Urheberhinweise bleiben erhalten. Dies ist kein offizielles
 Release des Originals und keine separat vertriebene App.
@@ -448,7 +449,7 @@ Das Beispiel zeigt Programmvorgaben. Die getestete lokale Einrichtung verwendet 
 - **model**: Whisper-Modellgröße (`tiny`, `base`, `small`, `medium`, `large`, `large-v2`, `large-v3`, `large-v3-turbo`). Standard: `base`.
 - **language**: Transkriptions-Sprache (`de`, `en`) oder `auto`.
 - **ui_language**: Sprache der App-Oberfläche (`de` oder `en`). Standard: `de`. Änderungen greifen nach einem Neustart.
-- **backend**: `openai-whisper` oder `faster-whisper` (lokal), oder `openrouter` / `openai-cloud` (Cloud-Transkription mit `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Datenschutz:** Bei einem Cloud-Backend wird die Aufnahme an OpenRouter bzw. OpenAI gesendet; der Schlüssel kommt aus `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (oder den konfigurierten Variablennamen) und wird nie in der Config gespeichert. Der explizite Shortcut *Diktieren · lokal* erzwingt bei konfiguriertem Cloud-Backend die lokale Erkennung mit `faster-whisper`. Für die Auswahl *Lokal* im Hauptfenster dieses Stands muss wie in der getesteten Einrichtung ein lokales Spracherkennungs-Backend konfiguriert sein.
+- **backend**: `openai-whisper` oder `faster-whisper` (lokal), oder `openrouter` / `openai-cloud` (Cloud-Transkription mit `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Datenschutz:** Bei einem Cloud-Backend wird die Aufnahme an OpenRouter bzw. OpenAI gesendet; der Schlüssel kommt aus `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (oder den konfigurierten Variablennamen) und wird nie in der Config gespeichert. Der explizite Shortcut *Diktieren · lokal* erzwingt bei konfiguriertem Cloud-Backend die lokale Erkennung mit `faster-whisper`. Auch die Auswahl *Lokal* im Hauptfenster erzwingt nun lokale Erkennung, selbst nach Verwendung eines Cloud-fähigen Workflows.
 - **hotkey_mode**:
   - `toggle`: Einmal drücken startet, erneutes Drücken beendet.
   - `hold`: Aufnahme läuft solange der Hotkey gedrückt wird. Tastendrücke unter 150 ms werden verworfen; leere Aufnahmen kehren ohne dauerhaften Fehlerzustand zu Bereit zurück.

@@ -253,6 +253,7 @@ class MainWindow(QWidget):
         self._state = "IDLE"
         self._rec_start: Optional[float] = None
         self._last_ai_workflow = WorkflowType.TEXT_IMPROVER
+        self._preferred_workflow = WorkflowType.LOCAL
         self.setWindowTitle(t("app.name"))
         # The panel draws its own title and window controls.
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint)
@@ -265,7 +266,13 @@ class MainWindow(QWidget):
         self._setup_ui()
         config = getattr(controller, "config", None)
         if config is not None:
-            self._select_workflow(WorkflowType(config.preferred_workflow))
+            preferred = WorkflowType(config.preferred_workflow)
+            # The saved preference survives restart; the GUI's Local side must
+            # use the strictly local workflow, including older configurations.
+            self._preferred_workflow = (
+                WorkflowType.LOCAL if preferred == WorkflowType.TRANSCRIPTION else preferred
+            )
+            self._select_workflow(self._preferred_workflow)
         self.update_state("IDLE", None, None)
         self._refresh_mode_summary()
 
@@ -465,6 +472,7 @@ class MainWindow(QWidget):
         self._workflow_combo.setAccessibleName(t("mainwindow.tooltip.workflow"))
         for workflow in _WORKFLOW_ORDER:
             self._workflow_combo.addItem(t(f"workflow.{workflow.value}.name"), userData=workflow)
+        self._workflow_combo.setCurrentIndex(self._workflow_combo.findData(WorkflowType.LOCAL))
         self._workflow_combo.currentIndexChanged.connect(self._on_workflow_changed)
         self._workflow_combo.hide()
         self._caption_action = self._caption("action")
@@ -547,10 +555,11 @@ class MainWindow(QWidget):
 
     def _selected_workflow(self) -> WorkflowType:
         workflow = self._workflow_combo.currentData()
-        return workflow if isinstance(workflow, WorkflowType) else WorkflowType.TRANSCRIPTION
+        return workflow if isinstance(workflow, WorkflowType) else WorkflowType.LOCAL
 
     @pyqtSlot()
     def _on_workflow_changed(self) -> None:
+        self._preferred_workflow = self._selected_workflow()
         self._sync_mode_widgets()
         callback = getattr(self._controller, "main_window_workflow_changed", None)
         if callback is not None:
@@ -566,10 +575,10 @@ class MainWindow(QWidget):
 
     def _set_ai_mode(self, ai: bool) -> None:
         """The switch picks a workflow; AI remembers the last AI action."""
-        if (self._selected_workflow() in LLM_WORKFLOWS) == ai:
+        if ai and self._selected_workflow() in LLM_WORKFLOWS:
             self._sync_mode_widgets()
-            return  # already on that side: keep the exact workflow (e.g. LOCAL, EMOJI_TEXT)
-        workflow = self._last_ai_workflow if ai else WorkflowType.TRANSCRIPTION
+            return  # Keep the exact active AI action (e.g. EMOJI_TEXT).
+        workflow = self._last_ai_workflow if ai else WorkflowType.LOCAL
         index = self._workflow_combo.findData(workflow)
         if index >= 0:
             self._workflow_combo.setCurrentIndex(index)
@@ -738,7 +747,9 @@ class MainWindow(QWidget):
             self._timer.stop()
             self._rec_start = None
             self._timer_label.setText("00:00")
-        if workflow is not None:
+        if state == "IDLE" and workflow is None:
+            self._select_workflow(self._preferred_workflow)
+        elif workflow is not None:
             self._select_workflow(workflow)
 
     def _select_workflow(self, workflow: WorkflowType) -> None:

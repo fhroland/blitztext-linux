@@ -39,9 +39,39 @@ def test_window_restores_ai_and_only_user_changes_are_saved(qapp, tmp_path):
     ctrl.main_window_workflow_changed.assert_not_called()
     window.update_state("RECORDING", WorkflowType.LOCAL, None)
     ctrl.main_window_workflow_changed.assert_not_called()
+    window.update_state("IDLE", None, None)
+    assert window._selected_workflow() == WorkflowType.EMOJI_TEXT
+    assert ctrl.config.preferred_workflow == "emoji_text"
+    ctrl.main_window_workflow_changed.assert_not_called()
+    window._set_ai_mode(False)
+    ctrl.main_window_workflow_changed.assert_called_once_with(WorkflowType.LOCAL)
+    ctrl.main_window_workflow_changed.reset_mock()
     window._set_ai_mode(True)
     ctrl.main_window_workflow_changed.assert_called_once_with(WorkflowType.EMOJI_TEXT)
     window.close()
+
+
+@pytest.mark.parametrize("preferred", ["local", "text_improver", "dampf_ablassen", "emoji_text"])
+def test_saved_workflow_is_restored_after_other_workflows_without_saving(qapp, tmp_path, preferred):
+    from app.main_window import MainWindow
+    from tests.test_main_window_widget import _Controller
+    ctrl = _Controller()
+    ctrl.config = Config(config_dir=tmp_path)
+    ctrl.config.preferred_workflow = preferred
+    ctrl.config.save()
+    ctrl.main_window_workflow_changed = MagicMock()
+    window = MainWindow(ctrl)
+    try:
+        assert window._selected_workflow() == WorkflowType(preferred)
+        for temporary in (WorkflowType.LOCAL, WorkflowType.TEXT_IMPROVER, WorkflowType.EMOJI_TEXT):
+            window.update_state("RECORDING", temporary, None)
+            window.update_state("TRANSCRIBING", temporary, None)
+            window.update_state("IDLE", None, None)
+            assert window._selected_workflow() == WorkflowType(preferred)
+            assert Config(config_dir=tmp_path).preferred_workflow == preferred
+        ctrl.main_window_workflow_changed.assert_not_called()
+    finally:
+        window.close()
 
 
 @pytest.mark.parametrize("sample,expected", [(0, 0), (3276, 2/3), (32767, 1)])

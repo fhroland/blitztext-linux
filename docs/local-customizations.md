@@ -1,7 +1,7 @@
 # Persönlicher Anpassungs-Fork
 
 Dieses Repository erhält den funktionierenden lokalen Stand vom 28.10.2026.
-Basis ist Commit `73a1e41` des MIT-lizenzierten Originals
+Ursprüngliche Basis ist Commit `73a1e41` des MIT-lizenzierten Originals
 [TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux).
 Lizenz und Urheberhinweise bleiben erhalten. Dies ist ein persönlicher
 Quellcode-Fork, keine offizielle Veröffentlichung und keine separat vertriebene
@@ -29,6 +29,31 @@ die PyAV-Korrektur betrifft eine Bibliotheksinkompatibilität, die KWin-Anpassun
 KDE/Wayland.
 
 ## Historie
+
+### 2026-10-28 — Originalkorrekturen bis fae656c übernommen
+
+- `590782c`: Der Schalter Lokal im Hauptfenster verwendet den strikt lokalen
+  Workflow und bleibt damit auch bei konfiguriertem Cloud-Spracherkennungs-Backend
+  lokal. Lokale Backends bleiben erhalten; für Cloud-Konfiguration wird auf
+  faster-whisper zurückgegriffen. Neue Tests prüfen, dass weder Audio noch
+  Cloud-Zugangsdaten die lokale Verarbeitung erreichen.
+- `fae656c`: Nach Ende einer Aufnahme über einen anderen Workflow wird die
+  zuvor gewählte Betriebsart im Hauptfenster wiederhergestellt.
+- Mit unserer Moduspersistenz zusammengeführt: Die Wiederherstellung nutzt den
+  gespeicherten `preferred_workflow`, einschließlich KI-Aktion. Ältere gespeicherte
+  `transcription`-Werte werden bei der Anzeige des Hauptfensters als strikt
+  lokaler Modus interpretiert. Ein expliziter Cloud-Diktierworkflow im Tray bleibt
+  weiterhin möglich; die normale Aufnahmetaste folgt der gespeicherten Vorgabe.
+- Als echter Git-Merge übernommen, damit die beiden Originalcommits in der
+  gemeinsamen Historie enthalten sind. Vorheriger Stand lokal mit
+  `before-upstream-2026-10-28` markiert; Zusammenführung separat unter
+  `upgrade/upstream-2026-10-28` geprüft. Update-Sperre und unsere übrigen
+  Anpassungen bleiben erhalten.
+- Validierung des zusammengeführten Stands unter openSUSE: 1094 Tests bestanden,
+  2 übersprungen; Ubuntu/Debian-Installer-Tests ausgenommen. Neue Originaltests
+  plus zusätzliche Regressionstests prüfen die Kombination mit unserer
+  dauerhaften Modusspeicherung. Git-Diffprüfung, Shellsyntax und lokale
+  Dokumentationslinks ebenfalls geprüft.
 
 ### 2026-10-28 — erster eigener Stand
 

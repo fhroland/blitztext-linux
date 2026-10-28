@@ -7,7 +7,8 @@
 
 This is [fhroland's personal fork](https://github.com/fhroland/blitztext-linux)
 of **[TimInTech/blitztext-linux](https://github.com/TimInTech/blitztext-linux)**,
-based on upstream commit `73a1e41` (app version 0.9.1). The Linux original is
+originally based on upstream commit `73a1e41` (app version 0.9.1), with upstream
+fixes through `fae656c` merged on 2026-10-28. The Linux original is
 itself a port of [cmagnussen/blitztext-app](https://github.com/cmagnussen/blitztext-app).
 Credit, the MIT license, and upstream copyright notices are retained. This is
 not an official upstream release or a separately distributed app.
@@ -436,7 +437,7 @@ This example uses program defaults. The tested local setup instead uses faster-w
 - **model**: Whisper model size (`tiny`, `base`, `small`, `medium`, `large`, `large-v2`, `large-v3`, `large-v3-turbo`). Default: `base`.
 - **language**: Transcription language (`de`, `en`) or `auto`.
 - **ui_language**: Language of the app interface (`de` or `en`). Default: `de`. Changes take effect after a restart.
-- **backend**: `openai-whisper` or `faster-whisper` (local), or `openrouter` / `openai-cloud` (cloud transcription with `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Privacy:** with a cloud backend the recorded audio is sent to OpenRouter or OpenAI; the key is read from `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (or your configured variable names), never stored in the config. The explicit *Dictate · local* shortcut forces local `faster-whisper` when a cloud backend is configured. For the main-window *Local* selection in this snapshot, configure a local speech backend as in the tested setup.
+- **backend**: `openai-whisper` or `faster-whisper` (local), or `openrouter` / `openai-cloud` (cloud transcription with `openai/gpt-4o-transcribe` / `gpt-4o-transcribe`). **Privacy:** with a cloud backend the recorded audio is sent to OpenRouter or OpenAI; the key is read from `OPENROUTER_API_KEY` / `OPENAI_API_KEY` (or your configured variable names), never stored in the config. The explicit *Dictate · local* shortcut forces local `faster-whisper` when a cloud backend is configured. The main-window *Local* selection now enforces local transcription as well, even after a cloud-capable workflow was used.
 - **hotkey_mode**:
   - `toggle`: press once to start, press again to stop.
   - `hold`: recording runs as long as the hotkey is held. Presses below 150 ms are discarded; empty recordings return to ready without a persistent error state.
