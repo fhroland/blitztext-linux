@@ -72,6 +72,12 @@ full-screen application, or the desktop layout keeps the **system tray out of vi
   **grey = error**, **green = ready**. These colours are separate from gold UI accents.
 - Blitztext starts in the tray; the main window opens only on request.
 
+**Error details in KDE:** a failed operation sends one critical desktop notification
+grouped under **Blitztext**, with a title naming the failed step and the error cause
+in its body. Details can be read in KDE's notification centre/history, subject to
+the desktop's notification settings. Keys and credentials are redacted. If native
+delivery via `notify-send` is unavailable, a Qt tray notification is used as fallback.
+
 <p><img src="docs/screenshots/linux/overlay-error-en.png" alt="Grey microphone and error message after a failed workflow" width="250"><br>Failure: visible for four seconds; details appear in the error notification.</p>
 
 These are captures of the actual Qt widgets with a synthetic demonstration level

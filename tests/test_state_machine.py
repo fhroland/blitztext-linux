@@ -532,8 +532,8 @@ class TestStateMachine:
         )
         caplog.set_level(logging.DEBUG, logger="blitztext.main")
 
-        with patch.object(gui_app, "show_tray_error") as tray_error, \
-             patch("app.blitztext_linux.notify_service.notify") as notify:
+        with patch.object(gui_app, "show_tray_error", wraps=gui_app.show_tray_error) as tray_error, \
+             patch("app.blitztext_linux.notify_service.notify", return_value=True) as notify:
             gui_app._on_worker_error(hostile_error)
 
         error_messages = [
@@ -541,7 +541,7 @@ class TestStateMachine:
         ]
         assert error_messages == [f"Worker error: {expected_message}"]
         assert all(hostile_error not in record.getMessage() for record in caplog.records)
-        assert tray_error.call_args.args[1] == expected_message
+        assert gui_app._tray_error_message == expected_message
         assert notify.call_args.args[1] == expected_message
 
     def test_worker_error_limits_the_complete_error_log_record(self, gui_app, caplog):
@@ -549,8 +549,8 @@ class TestStateMachine:
         expected_message = "x" * 225 + "…"
         caplog.set_level(logging.DEBUG, logger="blitztext.main")
 
-        with patch.object(gui_app, "show_tray_error") as tray_error, \
-             patch("app.blitztext_linux.notify_service.notify") as notify:
+        with patch.object(gui_app, "show_tray_error", wraps=gui_app.show_tray_error) as tray_error, \
+             patch("app.blitztext_linux.notify_service.notify", return_value=True) as notify:
             gui_app._on_worker_error(hostile_error)
 
         error_messages = [
@@ -558,8 +558,22 @@ class TestStateMachine:
         ]
         assert error_messages == [f"Worker error: {expected_message}"]
         assert len(error_messages[0]) <= 240
-        assert tray_error.call_args.args[1] == expected_message
-        assert notify.call_args.args[1] == expected_message
+        assert tray_error.call_args.args[1] == hostile_error
+        assert notify.call_args.args[1] == hostile_error
+
+    @pytest.mark.parametrize("delivered", [True, False])
+    def test_ai_error_notifies_once_with_details_and_qt_fallback(self, gui_app, delivered):
+        from app.i18n import t
+
+        gui_app._set_state("RECORDING", "test")
+        gui_app._set_state("LLM_REWRITING", "test")
+        with patch("app.blitztext_linux.notify_service.notify", return_value=delivered) as notify, \
+             patch.object(gui_app.tray_icon, "showMessage") as popup:
+            gui_app._on_worker_error("GX10 server timed out; api_key=DUMMY_API_KEY_123456")
+        notify.assert_called_once_with(t("notify.error.rewriting"),
+            "GX10 server timed out; api_key=[REDACTED]", urgency="critical", icon="dialog-error")
+        assert popup.call_count == (0 if delivered else 1)
+        assert gui_app._recording_overlay._state == "ERROR"
 
     def test_state_returns_to_idle_after_result(self, gui_app):
         gui_app.state = "LLM_REWRITING"

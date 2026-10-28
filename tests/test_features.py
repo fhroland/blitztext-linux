@@ -223,6 +223,16 @@ class TestNotify:
             notify_service.notify("T", "B")
             assert run_mock.call_args.kwargs.get("timeout") is not None
 
+    @pytest.mark.parametrize("returncode,expected", [(0, True), (1, False)])
+    def test_native_notification_groups_as_blitztext_and_escapes_details(self, returncode, expected):
+        with patch("app.notify.shutil.which", return_value="/usr/bin/notify-send"), \
+             patch("app.notify.subprocess.run", return_value=SimpleNamespace(returncode=returncode)) as run:
+            assert notify_service.notify("AI failure", "Server <offline> & retry", urgency="critical") is expected
+        command = run.call_args.args[0]
+        assert "--app-name=Blitztext" in command
+        assert command[command.index("-u") + 1] == "critical"
+        assert command[-3:] == ["--", "AI failure", "Server &lt;offline&gt; &amp; retry"]
+
 
 # ---------------------------------------------------------------------------
 # TTS-Verfuegbarkeit

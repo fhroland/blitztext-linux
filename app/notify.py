@@ -6,6 +6,7 @@ silently skipped.
 from __future__ import annotations
 
 import logging
+from html import escape
 import shutil
 import subprocess
 
@@ -19,21 +20,23 @@ def notify(
     body: str,
     urgency: str = "normal",
     icon: str = "audio-input-microphone",
-) -> None:
-    """Sendet eine Desktop-Benachrichtigung ohne bei OS-Problemen zu werfen."""
+) -> bool:
+    """Send a native notification; return success without raising on OS errors."""
     if shutil.which("notify-send") is None:
         logger.debug("notify-send nicht gefunden -- Benachrichtigung uebersprungen.")
-        return
+        return False
     try:
-        subprocess.run(
-            ["notify-send", "-u", urgency, "-i", icon, title, body],
+        result = subprocess.run(
+            ["notify-send", "--app-name=Blitztext", "-u", urgency, "-i", icon,
+             "--", title, escape(body)],
             check=False,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             timeout=_NOTIFY_TIMEOUT,
         )
+        return result.returncode == 0
     except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
-        pass
+        return False
 
 
 def is_available() -> bool:

@@ -63,6 +63,7 @@ logger = logging.getLogger("blitztext.main")
 
 _WORKER_ERROR_LOG_PREFIX = "Worker error: "
 _MAX_ERROR_LOG_LENGTH = 240
+_MAX_ERROR_NOTIFICATION_LENGTH = 2000
 
 
 def _configure_qt_platform() -> None:
@@ -1561,15 +1562,16 @@ class BlitztextApp(QObject):
 
     @pyqtSlot(str)
     def _on_worker_error(self, err_msg: str) -> None:
-        safe_error = sanitize_external_error(
-            err_msg, max_length=_MAX_ERROR_LOG_LENGTH - len(_WORKER_ERROR_LOG_PREFIX)
-        )
-        logger.error("%s%s", _WORKER_ERROR_LOG_PREFIX, safe_error)
-        self._finish_worker_with_error(safe_error, "worker error")
+        log_error = sanitize_external_error(err_msg,
+            max_length=_MAX_ERROR_LOG_LENGTH - len(_WORKER_ERROR_LOG_PREFIX))
+        logger.error("%s%s", _WORKER_ERROR_LOG_PREFIX, log_error)
+        # The notification boundary sanitizes independently with a larger limit.
+        self._finish_worker_with_error(err_msg, "worker error")
 
     def _finish_worker_with_error(self, err_msg: str, reason: str) -> None:
-        self.show_tray_error(t("notify.error.title"), err_msg)
-        notify_service.notify(t("notify.error.title"), err_msg, urgency="critical")
+        title_key = {"LLM_REWRITING": "notify.error.rewriting",
+                     "TRANSCRIBING": "notify.error.transcribing"}.get(self.state, "notify.error.title")
+        self.show_tray_error(t(title_key), err_msg)
         self._recording_routes_to_compose = False
         self.current_workflow = None
         self._set_state("IDLE", reason)
@@ -1793,9 +1795,14 @@ class BlitztextApp(QObject):
         self.show_tray_error("Hotkey Fehler", err_msg)
 
     def show_tray_error(self, title: str, message: str) -> None:
+        title = sanitize_external_error(title, max_length=160)
+        message = sanitize_external_error(message, max_length=_MAX_ERROR_NOTIFICATION_LENGTH)
         self._tray_error_message = message
         self.update_tray_state()
-        self.tray_icon.showMessage(title, message, QSystemTrayIcon.MessageIcon.Critical, 10000)
+        # One native desktop notification, grouped under Blitztext in KDE.
+        # Keep Qt as fallback if notify-send is missing or delivery fails.
+        if not notify_service.notify(title, message, urgency="critical", icon="dialog-error"):
+            self.tray_icon.showMessage(title, message, QSystemTrayIcon.MessageIcon.Critical, 10000)
 
     def show_tray_warning(self, title: str, message: str) -> None:
         self.tray_icon.showMessage(title, message, QSystemTrayIcon.MessageIcon.Warning, 5000)

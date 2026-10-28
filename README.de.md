@@ -77,6 +77,13 @@ den **Systemtray unsichtbar macht**.
   Bedienelementen getrennt.
 - Blitztext startet nur im Systemtray; das Hauptfenster wird bei Bedarf geöffnet.
 
+**Fehlerdetails in KDE:** Ein fehlgeschlagener Vorgang erzeugt eine kritische
+Desktop-Benachrichtigung unter **Blitztext**, mit dem betroffenen Arbeitsschritt
+im Titel und der Fehlerursache im Text. Die Details lassen sich entsprechend den
+Desktop-Benachrichtigungseinstellungen auch im KDE-Benachrichtigungsverlauf lesen.
+Schlüssel und Zugangsdaten werden unkenntlich gemacht. Ist die native Zustellung
+über `notify-send` nicht verfügbar, dient eine Qt-Tray-Benachrichtigung als Ersatz.
+
 <p><img src="docs/screenshots/linux/overlay-error-de.png" alt="Graues Mikrofon mit Fehlerhinweis nach einem fehlgeschlagenen Vorgang" width="250"><br>Fehleranzeige: vier Sekunden sichtbar; Details stehen in der Fehlermeldung.</p>
 
 Die Bilder sind Aufnahmen der tatsächlichen Qt-Oberfläche mit demonstriertem

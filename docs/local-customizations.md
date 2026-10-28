@@ -62,6 +62,13 @@ KDE/Wayland.
   eingefrorener Laufzeit und Fehlerhinweis sichtbar, dann blendet sie sich aus.
   Der Tray behält den Fehlerstatus bis zum nächsten Aufnahmestart. Eine neue
   Aufnahme ist sofort möglich und cancelt den Ausblend-Timer.
+- Fehler zentral als eine kritische Desktop-Benachrichtigung unter dem App-Namen
+  Blitztext melden: KI-/Transkriptionsfehler im Titel, bereinigte Fehlerursache
+  im Text (bis 2000 Zeichen), Zugangsdaten maskiert. KDE kann die Details im
+  Benachrichtigungsverlauf anzeigen; dessen Einstellungen gelten weiterhin.
+  Native Zustellung per notify-send, Qt-Tray als Ersatz bei fehlgeschlagener
+  Zustellung; keine doppelten Meldungen. Logeinträge bleiben separat auf 240
+  Zeichen begrenzt. Dokumentationsbilder zeigen Rot/Orange/Gelb/Grau konsistent.
 
 ### Validierung des ersten Stands
 
